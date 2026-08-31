@@ -72,6 +72,17 @@ A visual portfolio for showcasing creative work.
 </tr>
 </table>
 
+### Commerce Cloudflare
+
+The Commerce distribution template combines EmDash CMS, Commerce Core, a constrained native page composer, and consent-aware Facebook Pixel, TikTok Pixel, and GA4 adapters.
+
+- Products, variants, inventory, carts, checkout, and orders
+- Validated responsive section layouts with a trusted editor
+- Native analytics core with independent first-party adapters
+- Sandboxed payment, shipping, fulfillment, tax, and marketing providers
+
+See [`templates/commerce-cloudflare/README.md`](templates/commerce-cloudflare/README.md) and the [Commerce distribution guide](https://docs.emdashcms.com/guides/commerce-distribution/).
+
 ## Why EmDash?
 
 **WordPress was built for a different era.** Running WordPress today means managing PHP alongside JavaScript, layering caches to get acceptable performance, and knowing that [96% of WordPress security vulnerabilities come from plugins](https://patchstack.com/whitepaper/state-of-wordpress-security-in-2024/). EmDash is what WordPress would look like if you started from scratch with today's tools.

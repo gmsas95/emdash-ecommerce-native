@@ -22,6 +22,7 @@ verifyStoreIntegrity: true
 strictStorePkgContentCheck: true
 verifyDepsBeforeRun: error
 allowBuilds:
+  "@chip-in-asia/plugin-chip-for-emdash@https://codeload.github.com/gmsas95/chip-for-emdash/tar.gz/5d0ff8b3667be53d43fba2476c838ad1f5b08d16": true
   "@parcel/watcher": true
   sharp: true
   core-js-pure: false

@@ -1,0 +1,81 @@
+---
+import { Image, PortableText } from "emdash/ui";
+import { loadCmsCollection } from "../lib/cms";
+import type { CmsCollectionEntry, CmsMediaField } from "../lib/cms";
+import { ZIAS_MEDIA } from "../lib/zias-media";
+
+interface StoryBlockData {
+  kicker?: string;
+  title?: string;
+  image?: CmsMediaField | null;
+  content?: unknown[];
+  sort_order?: number;
+}
+
+interface StoryBlockEntry extends CmsCollectionEntry {
+  data: StoryBlockData;
+  edit?: Record<string, Record<string, unknown>>;
+}
+
+const STORY_FALLBACKS: Record<string, { src: string; alt: string }> = {
+  philosophy: ZIAS_MEDIA.philosophy,
+  stockists: ZIAS_MEDIA.stockist,
+  events: ZIAS_MEDIA.events,
+  certifications: ZIAS_MEDIA.certifications,
+  contact: ZIAS_MEDIA.contact,
+};
+
+interface StoryBlockData {
+  kicker?: string;
+  title?: string;
+  image?: CmsMediaField | null;
+  content?: unknown[];
+  sort_order?: number;
+}
+
+interface StoryBlockEntry extends CmsCollectionEntry {
+  data: StoryBlockData;
+  edit?: Record<string, Record<string, unknown>>;
+}
+
+const { entries: rawEntries, cacheHint } = await loadCmsCollection<StoryBlockEntry>("story_blocks", {
+  status: "published",
+  orderBy: { sort_order: "asc" },
+});
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+const entries = [...rawEntries].sort((left, right) => (left.data.sort_order ?? 0) - (right.data.sort_order ?? 0));
+---
+{entries.length > 0 && (
+  <div class="story-blocks" aria-label="ZIAS story">
+    {entries.map((entry, index) => {
+      const image = entry.data.image;
+      const imageSource = image && ("url" in image ? image.url : "src" in image ? image.src : undefined);
+      const fallback = STORY_FALLBACKS[entry.id];
+      const useLocalFallback = (import.meta.env.DEV || import.meta.env.PUBLIC_ZIAS_DEMO_MEDIA_FALLBACK === "true") && !imageSource && fallback;
+      return (
+        <section
+          id={entry.id}
+          class:list={["story-block", index % 2 === 1 && "story-block--reverse"]}
+          data-cms-collection="story_blocks"
+          data-cms-id={entry.id}
+        >
+          <div class="story-block__copy">
+            <h2 {...(entry.edit?.title ?? {})}>{entry.data.title ?? entry.id}</h2>
+            <div class="rich-text" {...(entry.edit?.content ?? {})}>
+              {entry.data.content ? <PortableText value={entry.data.content as never} /> : <p>Content coming soon.</p>}
+            </div>
+          </div>
+          {image && (
+            <div class="story-block__media" {...(entry.edit?.image ?? {})}>
+              {imageSource ? (
+                <Image image={image as never} />
+              ) : useLocalFallback ? (
+                <img src={fallback.src} alt={fallback.alt} loading="lazy" />
+              ) : null}
+            </div>
+          )}
+        </section>
+      );
+    })}
+  </div>
+)}

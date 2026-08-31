@@ -1,0 +1,155 @@
+---
+import type { PageLayout, SectionInstance } from "@emdash-cms/page-composer";
+import ClientCatalog from "./ClientCatalog.astro";
+import ClientFeaturedProduct from "./ClientFeaturedProduct.astro";
+
+interface Props {
+  layout: PageLayout;
+}
+
+type FeatureItem = { title: string; body: string };
+type FaqItem = { question: string; answer: string };
+
+const { layout } = Astro.props;
+
+function text(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function items<T>(value: unknown, isItem: (item: unknown) => item is T): T[] {
+  return Array.isArray(value) ? value.filter(isItem) : [];
+}
+
+function featureItem(value: unknown): value is FeatureItem {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.title === "string" && typeof candidate.body === "string";
+}
+
+function faqItem(value: unknown): value is FaqItem {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.question === "string" && typeof candidate.answer === "string";
+}
+
+function settings(section: SectionInstance): Record<string, unknown> {
+  return section.settings;
+}
+
+function sectionAttrs(section: SectionInstance): Record<string, string | undefined> {
+  return {
+    "data-layout": section.layout?.desktop ?? "stack",
+    "data-hide-desktop": section.visibility?.desktop === false ? "true" : undefined,
+    "data-hide-tablet": section.visibility?.tablet === false ? "true" : undefined,
+    "data-hide-mobile": section.visibility?.mobile === false ? "true" : undefined,
+  };
+}
+---
+
+<div class="composer-sections" data-layout-version={layout.version}>
+  {layout.sections.map((section) => {
+    const values = settings(section);
+    const eyebrow = text(values.eyebrow);
+    const heading = text(values.heading);
+    const body = text(values.body);
+    const ctaLabel = text(values.ctaLabel);
+    const ctaHref = text(values.ctaHref, "/shop");
+    return (
+      <section class:list={["composer-section", `composer-section--${section.type}`]} id={section.id} {...sectionAttrs(section)}>
+        {section.type === "hero" && (
+          <div class="composer-section__inner">
+            {eyebrow && <p class="composer-eyebrow">{eyebrow}</p>}
+            <h2>{heading}</h2>
+            {body && <p class="composer-copy">{body}</p>}
+            {ctaLabel && <a class="button" href={ctaHref}>{ctaLabel} <span aria-hidden="true">→</span></a>}
+          </div>
+        )}
+
+        {section.type === "image-text" && (
+          <div class="composer-section__inner composer-section__split">
+            <div class:list={["composer-section__media", text(values.imagePosition, "right") === "left" && "composer-section__media--first"]}>
+              <img src={text(values.imageUrl)} alt={text(values.imageAlt)} loading="lazy" />
+            </div>
+            <div class="composer-section__copy">
+              <h2>{heading}</h2>
+              {body && <p class="composer-copy">{body}</p>}
+            </div>
+          </div>
+        )}
+
+        {section.type === "feature-columns" && (
+          <div class="composer-section__inner">
+            {heading && <h2>{heading}</h2>}
+            <div class="composer-feature-grid">
+              {items(values.items, featureItem).map((item) => (
+                <article>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {section.type === "faq" && (
+          <div class="composer-section__inner composer-section__narrow">
+            {heading && <h2>{heading}</h2>}
+            {items(values.items, faqItem).map((item) => (
+              <details>
+                <summary>{item.question}</summary>
+                <p>{item.answer}</p>
+              </details>
+            ))}
+          </div>
+        )}
+
+        {section.type === "announcement" && (
+          <div class:list={["composer-announcement", `composer-announcement--${text(values.tone, "neutral")}`]}>
+            <p>{text(values.text)}</p>
+          </div>
+        )}
+
+        {section.type === "newsletter" && (
+          <div class="composer-section__inner composer-section__split composer-newsletter">
+            <div>
+              <h2>{heading}</h2>
+              {body && <p class="composer-copy">{body}</p>}
+            </div>
+            <form class="form-stack" action="/contact" method="get" data-analytics-event="lead">
+              <label>Email address <input type="email" name="email" autocomplete="email" required /></label>
+              <button type="submit">{text(values.submitLabel, "Subscribe")}</button>
+            </form>
+          </div>
+        )}
+
+        {section.type === "product-grid" && (
+          <div class="composer-section__inner composer-commerce-placeholder" data-composer-columns={text(values.columns, "4")}>
+            {heading && <h2>{heading}</h2>}
+            <ClientCatalog id={`composer-catalog-${section.id}`} limit={12} />
+          </div>
+        )}
+
+        {section.type === "featured-product" && (
+          <div class="composer-section__inner composer-commerce-placeholder">
+            {heading && <h2>{heading}</h2>}
+            <ClientFeaturedProduct productId={text(values.productId)} />
+          </div>
+        )}
+
+        {section.type === "category-grid" && (
+          <div class="composer-section__inner composer-commerce-placeholder">
+            {heading && <h2>{heading}</h2>}
+            <p class="composer-copy">Category data is unavailable until a compatible catalog extension is configured.</p>
+          </div>
+        )}
+
+        {section.type === "reviews" && (
+          <div class="composer-section__inner composer-commerce-placeholder">
+            {heading && <h2>{heading}</h2>}
+            <p class="composer-copy">Review data is unavailable until a compatible review extension is configured.</p>
+          </div>
+        )}
+      </section>
+    );
+  })}
+</div>

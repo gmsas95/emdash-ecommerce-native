@@ -1,0 +1,66 @@
+---
+title: Theme Composition
+description: Create safe, responsive section layouts for Commerce storefronts.
+---
+
+The native `@emdash-cms/page-composer` package provides the constrained visual composition layer for Commerce themes. It covers section stacks, responsive presets, validated settings, and a trusted editor without becoming a freeform canvas.
+
+## Stored layout
+
+A page stores a versioned layout, not serialized markup:
+
+```ts
+type PageLayout = {
+  version: 1;
+  sections: SectionInstance[];
+};
+
+type SectionInstance = {
+  id: string;
+  type: string;
+  settings: Record<string, unknown>;
+  layout?: {
+    desktop?: "stack" | "split" | "three-column" | "center" | "wide" | "narrow";
+    tablet?: "stack" | "split" | "three-column" | "center" | "wide" | "narrow";
+    mobile?: "stack" | "split" | "three-column" | "center" | "wide" | "narrow";
+  };
+  visibility?: { desktop?: boolean; tablet?: boolean; mobile?: boolean };
+};
+```
+
+The API and storage boundary validates the version, IDs, registered section type, settings schema, presets, and responsive visibility before a layout is saved or rendered. Unknown sections are rejected rather than silently executed.
+
+## Section registry
+
+Each definition supplies a type, editor label, category, settings schema, supported presets, and a server-rendered renderer:
+
+```ts
+const registry = createSectionRegistry([
+  {
+    type: "hero",
+    label: "Hero",
+    category: "content",
+    settingsSchema: heroSettings,
+    supportedPresets: ["stack", "center", "wide"],
+    render: renderHero,
+  },
+]);
+```
+
+The initial registry includes `hero`, `image-text`, `feature-columns`, `faq`, `product-grid`, `featured-product`, `category-grid`, `reviews`, `announcement`, and `newsletter`. Product sections store product references and read current published Commerce data at render time; they never persist copied price or inventory. Category and review sections have validated references and safe empty states until a compatible extension supplies those data sources.
+
+## Editor scope
+
+The trusted React editor supports insertion, section-tree reordering, duplication, removal, validated settings, constrained layout presets, responsive visibility, and preview. Block Kit is used for property controls only. The section tree and preview remain native trusted UI.
+
+Layouts intentionally do not accept arbitrary HTML, JavaScript, CSS, absolute positioning, pixel coordinates, unrestricted nested layout trees, or editor-authored order/payment state. Keep Portable Text as the editorial rich-text model.
+
+## Rendering rules
+
+1. Validate the layout before selecting a renderer.
+2. Render sections server-side with page context.
+3. Provide an accessible fallback or safe omission for unavailable sections.
+4. Keep draft Commerce records private; preview must not publish draft products.
+5. Preserve semantic headings, keyboard interaction, text alternatives, visible focus, and reduced-motion behavior.
+
+Themes expose stable semantic product, cart, checkout, search, and lead targets. Theme code does not call Facebook Pixel, TikTok Pixel, or GA4 directly; the analytics runtime consumes normalized events from those targets.

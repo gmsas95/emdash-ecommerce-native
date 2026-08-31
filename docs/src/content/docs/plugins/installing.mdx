@@ -152,6 +152,18 @@ Native plugins:
   Use native plugins only when you need features that require build-time integration: React admin pages, Portable Text rendering components, or page fragment injection. For everything else, prefer sandboxed plugins -- they can be installed, updated, and removed from the admin panel.
 </Aside>
 
+## EmDash Commerce distribution
+
+The Commerce distribution installs its native packages together:
+
+```bash
+pnpm install
+```
+
+Register Commerce Core, Page Composer, and analytics in `emdash({ plugins: [...] })`. Native package versions ship with the distribution and run in-process. Do not add payment, shipping, fulfillment, tax, or marketing SDKs to Commerce Core; install those integrations separately as sandboxed provider plugins and connect them through the signed Commerce bridge.
+
+See [Commerce distribution](/guides/commerce-distribution/) and [Provider plugins](/guides/provider-plugins/) for the package map, capability review, server-side secret handling, and bridge configuration.
+
 ## Marketplace vs. config — when to use which
 
 | | Marketplace (sandboxed) | Config (native or in-process sandboxed) |

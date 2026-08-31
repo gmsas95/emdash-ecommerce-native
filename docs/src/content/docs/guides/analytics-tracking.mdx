@@ -1,0 +1,61 @@
+---
+title: Analytics Tracking
+description: Configure consent-aware Facebook Pixel, TikTok Pixel, and GA4 tracking.
+---
+
+Analytics is a site-wide native subsystem. Commerce, editorial pages, and themes emit normalized events into `@emdash-cms/analytics-core`; independent adapters translate them to Facebook Pixel, TikTok Pixel, or GA4.
+
+## Configure the native plugin
+
+```js title="astro.config.mjs"
+import { analyticsPlugin } from "@emdash-cms/analytics-core";
+
+emdash({
+  plugins: [
+    analyticsPlugin({
+      consentRequired: true,
+      environment: "production",
+    }),
+  ],
+});
+```
+
+Set adapter IDs and consent/debug/data-sharing settings in the native Analytics plugin's server-side settings page. Each adapter is independently enabled by its ID. Browser IDs are not provider credentials. Keep server secrets out of settings that are injected into public pages.
+
+## Canonical events
+
+The contract includes:
+
+- `page_view` — published public page rendered;
+- `view_item` — published product or variant viewed;
+- `search` — normalized search completed;
+- `add_to_cart` and `remove_from_cart` — accepted cart mutations;
+- `begin_checkout` — shopper enters checkout for a current cart;
+- `purchase` — server confirms an order as paid;
+- `refund` — server records a provider-confirmed refund;
+- `lead` — configured contact or lead form accepted.
+
+Events contain a stable `id`, `name`, `occurredAt`, `source`, optional currency/value/items/page context, and scalar properties. `purchase` and `refund` are accepted only with `source: "server"`.
+
+```ts
+await dispatcher.track({
+  id: crypto.randomUUID(),
+  name: "add_to_cart",
+  occurredAt: new Date().toISOString(),
+  source: "client",
+  currency: "USD",
+  items: [{ id: "product-123", quantity: 1 }],
+});
+```
+
+A browser return such as `/checkout/result?status=success` is not payment proof and must never emit `purchase`. Emit conversion events from the server-confirmed Commerce state instead.
+
+## Consent and failure behavior
+
+With `consentRequired: true`, the runtime does not load provider scripts or dispatch events until the configured consent source grants consent. Queued events are released after consent, and denied consent drops the queue. Repeated IDs dispatch once. Adapter loading and tracking errors are isolated and do not block page rendering, cart operations, checkout, or order confirmation.
+
+Themes emit semantic events and never call Facebook, TikTok, or GA4 APIs directly. Use the shared runtime event target so changing a theme does not change provider behavior.
+
+## Data minimization
+
+Do not send payment credentials, provider access tokens, full addresses, order-access tokens, raw provider callbacks, unpublished products, or unnecessary email/phone/customer identifiers. Analytics validation rejects sensitive property names and keeps Commerce authoritative for monetary and order state.

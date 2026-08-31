@@ -1,0 +1,33 @@
+---
+import Base from "../../layouts/Base.astro";
+import DemoNotice from "../../components/DemoNotice.astro";
+const orderId = Astro.params.id ?? "";
+---
+<Base title="Order status" description="View your order status.">
+  <div class="page-wrap section order-page">
+    <h1>Order status</h1>
+    <p class="lede">View the latest server-authoritative status for order {orderId}.</p>
+    <DemoNotice compact />
+    <div id="order-state" class="notice" role="status" data-order-id={orderId}>Loading order status...</div>
+    <script>
+      import { commerceClient, formatMinorAmount } from "../../lib/commerce";
+
+      const root = document.querySelector("#order-state");
+      if (root) {
+        const orderId = root.getAttribute("data-order-id") || "";
+        const token = window.localStorage.getItem("commerce-order-access-token");
+        if (!token) {
+          root.textContent = "Open this page from the same browser used at checkout, or contact support with your order ID.";
+        } else {
+          commerceClient.orders.get(orderId, token)
+            .then((order) => {
+              root.textContent = `Status: ${order.status || "created"} · Total: ${formatMinorAmount(order.totalMinor, order.currency)}`;
+            })
+            .catch((error) => {
+              root.textContent = error instanceof Error ? error.message : "Order not found";
+            });
+        }
+      }
+    </script>
+  </div>
+</Base>

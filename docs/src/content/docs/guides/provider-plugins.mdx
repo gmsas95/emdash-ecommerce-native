@@ -1,0 +1,52 @@
+---
+title: Provider Plugins
+description: Connect payments, shipping, fulfillment, tax, and marketing providers without weakening Commerce Core.
+---
+
+External commerce integrations remain sandboxed EmDash plugins. Install them separately from the native distribution so provider SDKs, credentials, webhooks, retries, and provider-specific records stay behind the marketplace capability boundary.
+
+## Ownership boundary
+
+| Native Commerce Core | Sandboxed provider plugin |
+| --- | --- |
+| Products, variants, inventory, carts, checkout, and orders | Provider SDK and API calls |
+| Authoritative totals and payment state transitions | Provider credentials and webhook verification |
+| Signed bridge event and command contracts | Retries, idempotency, and provider records |
+| Public Commerce API and admin state | Provider-specific admin settings and connection tests |
+
+The provider must not write directly to Commerce tables or treat a browser return URL as payment confirmation.
+
+## Installation checklist
+
+1. Review the plugin manifest, source, version, capabilities, and host allowlist.
+2. Install it through the EmDash marketplace or declare it in the sandboxed configuration array with a configured sandbox runner.
+3. Approve only the capabilities required for the provider's documented behavior.
+4. Enter credentials in the plugin's server-side settings; never commit them or pass them to storefront code.
+5. Configure the Commerce bridge with the provider plugin ID, public command/event endpoints, allowed capabilities, and a random shared secret.
+6. Test connection, checkout creation, webhook verification, and the paid/refund state transitions in a non-production environment.
+7. Review logs and provider retry behavior before enabling live traffic.
+
+## Reference configuration
+
+The Cloudflare Commerce template keeps CHIP separate from Commerce Core:
+
+```js title="astro.config.mjs"
+commercePlugin({
+  bridgeSecrets: { chip: process.env.COMMERCE_BRIDGE_SECRET },
+  paymentBridges: {
+    chip: {
+      pluginId: "chip-for-emdash",
+      capabilities: ["payment.create", "payment.status", "payment.refund"],
+      sharedSecret: process.env.COMMERCE_BRIDGE_SECRET,
+      basePath: `${publicSiteUrl}/_emdash/api/plugins/chip-for-emdash/commerce/payment/create`,
+      eventPath: `${publicSiteUrl}/_emdash/api/plugins/emdash-commerce/bridge/events`,
+    },
+  },
+});
+```
+
+The exact provider endpoint contract belongs to the provider plugin. Commerce Core verifies signed bridge messages and remains authoritative for order state. Add shipping, fulfillment, tax, marketing, Stripe, or other payment providers through the same boundary rather than adding their SDKs to Commerce Core.
+
+## Security rules
+
+Do not expose provider secrets, access tokens, raw callback payloads, or full customer addresses to themes or analytics adapters. Keep bridge secrets server-side, rotate them deliberately, and disable/uninstall a provider when its capability or version review fails.

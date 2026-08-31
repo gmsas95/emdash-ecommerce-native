@@ -6,6 +6,8 @@
 	"description": "Agent-portable reimplementation of WordPress on Astro",
 	"scripts": {
 		"typecheck": "pnpm run --filter {./packages/**} --filter @emdash-cms/aggregator --filter @emdash-cms/labeler typecheck",
+		"commerce:typecheck": "pnpm --filter @gmsas95/emdash-commerce-contracts --filter @emdash-commerce/core --filter @emdash-cms/page-composer --filter @emdash-cms/analytics-core typecheck",
+		"commerce:test": "pnpm --filter @emdash-commerce/core --filter @emdash-cms/page-composer --filter @emdash-cms/analytics-core test",
 		"typecheck:demos": "pnpm run --workspace-concurrency=1 --filter {./demos/*} --filter !@emdash-cms/demo-cloudflare typecheck",
 		"typecheck:templates": "pnpm run --workspace-concurrency=1 --filter {./templates/*} typecheck",
 		"check": "pnpm run typecheck && pnpm run --filter {./packages/*} check",

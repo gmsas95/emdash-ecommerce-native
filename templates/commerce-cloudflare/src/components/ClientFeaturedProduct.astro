@@ -1,0 +1,77 @@
+---
+interface Props { productId: string; }
+const { productId } = Astro.props;
+---
+<div class="composer-featured-product" data-featured-product data-product-id={productId}>
+  <p class="notice">Loading the featured product...</p>
+</div>
+<script>
+  import { commerceClient, formatMinorAmount, imageUrl } from "../lib/commerce";
+  import type { CatalogItem } from "../lib/commerce";
+
+  const roots = [...document.querySelectorAll<HTMLElement>("[data-featured-product]")];
+  let catalogPromise: ReturnType<typeof commerceClient.catalog.list> | undefined;
+
+  function showMessage(root: HTMLElement, message: string, retry = false) {
+    root.replaceChildren();
+    const box = document.createElement("div");
+    box.className = retry ? "error-state" : "empty-state";
+    box.textContent = message;
+    if (retry) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Retry";
+      button.addEventListener("click", () => { void load(root); });
+      box.append(button);
+    }
+    root.append(box);
+  }
+
+  function render(root: HTMLElement, item: CatalogItem | undefined) {
+    if (!item) {
+      showMessage(root, "This product is no longer published. Choose another product in Page Composer.");
+      return;
+    }
+    const data = item.data;
+    const link = document.createElement("a");
+    link.className = "featured-product-card";
+    link.href = `/shop/${encodeURIComponent(data.slug)}`;
+    const productImage = document.createElement("img");
+    productImage.src = imageUrl(data.images?.[0]?.url);
+    productImage.alt = data.images?.[0]?.alt || data.name || "Featured product";
+    productImage.width = 800;
+    productImage.height = 800;
+    const details = document.createElement("span");
+    details.className = "featured-product-card__details";
+    const title = document.createElement("strong");
+    title.textContent = data.name || "Untitled product";
+    const variant = data.hasVariants ? data.variants?.[0] : undefined;
+    const amount = document.createElement("span");
+    const minor = variant?.priceMinor ?? data.priceMinor;
+    amount.textContent = typeof minor === "number" && Number.isSafeInteger(minor) && minor >= 0
+      ? formatMinorAmount(minor, variant?.currency || data.currency)
+      : "Price set in Commerce admin";
+    details.append(title, amount);
+    link.append(productImage, details);
+    root.replaceChildren(link);
+  }
+
+  async function load(root: HTMLElement) {
+    root.replaceChildren();
+    const loading = document.createElement("p");
+    loading.className = "notice";
+    loading.textContent = "Loading the featured product...";
+    root.append(loading);
+    try {
+      catalogPromise ??= commerceClient.catalog.list();
+      const result = await catalogPromise;
+      const productId = root.getAttribute("data-product-id");
+      render(root, result.items.find((item) => item.id === productId));
+    } catch {
+      catalogPromise = undefined;
+      showMessage(root, "We couldn't load the featured product. Retry to request the current Commerce catalog.", true);
+    }
+  }
+
+  for (const root of roots) void load(root);
+</script>

@@ -1,0 +1,11 @@
+---
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+---
+<aside class:list={["demo-notice", compact && "demo-notice--compact"]} role="note">
+  <span class="demo-notice__label">Client preview</span>
+  <p>Products, prices, and inventory are demo values. Update them in Commerce admin before launch.</p>
+</aside>

@@ -1,0 +1,145 @@
+{
+  "sourceSite": "https://ziascompany.com.my/",
+  "assets": [
+    {
+      "file": "hero-food.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/953063d2a561d9b21d8d7775a2b1d09b.jpg",
+      "section": "hero",
+      "dimensions": { "width": 2400, "height": 1505 },
+      "intendedUse": "Home hero food image"
+    },
+    {
+      "file": "zias-logo.png",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/bc1d8dfd08c122b0e772d77189148d49.png",
+      "section": "hero",
+      "dimensions": { "width": 799, "height": 533 },
+      "intendedUse": "Site identity and storefront header logo"
+    },
+    {
+      "file": "philosophy-palm.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/9fb6d2c34381423b3b68e83a8fbcd46b.jpg",
+      "section": "philosophies",
+      "dimensions": { "width": 1024, "height": 680 },
+      "intendedUse": "Philosophy story block image"
+    },
+    {
+      "file": "product-ready-to-cook.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/79711b6f5992381a8e2923b1be31f336.jpg",
+      "section": "products",
+      "dimensions": { "width": 800, "height": 800 },
+      "intendedUse": "Ready-to-cook product family image"
+    },
+    {
+      "file": "product-ready-to-eat.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/34bb93bc673cf1522fb183f138d93144.jpg",
+      "section": "products",
+      "dimensions": { "width": 800, "height": 800 },
+      "intendedUse": "Ready-to-eat and ground-spices product family image"
+    },
+    {
+      "file": "product-paste-marinade.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/d27808b6976fd587e6e7196a5cda6a6a.jpg",
+      "section": "products",
+      "dimensions": { "width": 800, "height": 800 },
+      "intendedUse": "Cooking paste and marinade product family image"
+    },
+    {
+      "file": "stockist-taste-borneo.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/9dc4d5617825dac6ca8397119b4c40d8.jpg",
+      "section": "distributors and stockists",
+      "dimensions": { "width": 800, "height": 600 },
+      "intendedUse": "Stockist image mosaic"
+    },
+    {
+      "file": "stockist-emart.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/e94cfc407d49c4ae63ae453f78eb078c.jpg",
+      "section": "distributors and stockists",
+      "dimensions": { "width": 800, "height": 600 },
+      "intendedUse": "Stockist image mosaic"
+    },
+    {
+      "file": "stockist-dapur-melanau.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/263c2aad5f12ef949a90603897e1aaa3.jpg",
+      "section": "distributors and stockists",
+      "dimensions": { "width": 800, "height": 600 },
+      "intendedUse": "Stockist image mosaic"
+    },
+    {
+      "file": "stockist-everise.png",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/57e05f36d4cafe3f7893dad8c5976215.png",
+      "section": "distributors and stockists",
+      "dimensions": { "width": 267, "height": 183 },
+      "intendedUse": "Stockist logo card"
+    },
+    {
+      "file": "event-mihas.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/72196195296d3a011402f621c27e4e6e.jpg",
+      "section": "local and international events",
+      "dimensions": { "width": 800, "height": 600 },
+      "intendedUse": "Event story block image"
+    },
+    {
+      "file": "event-sie.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/3d2241ebb11a44947f4d84c84019700b.jpg",
+      "section": "local and international events",
+      "dimensions": { "width": 800, "height": 450 },
+      "intendedUse": "Event story block image"
+    },
+    {
+      "file": "event-sifex.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/eae085274ca389a9e712b763f9e5ea0b.jpg",
+      "section": "local and international events",
+      "dimensions": { "width": 800, "height": 600 },
+      "intendedUse": "Event story block image"
+    },
+    {
+      "file": "event-borneo-showcase.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/6354b4dba2ce74fd4ba8e381997d6096.jpg",
+      "section": "local and international events",
+      "dimensions": { "width": 800, "height": 600 },
+      "intendedUse": "Event story block image"
+    },
+    {
+      "file": "event-portrait.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/486e1fec7584c6d4d9483907d8016aba.jpg",
+      "section": "local and international events",
+      "dimensions": { "width": 1200, "height": 1600 },
+      "intendedUse": "Event portrait story block image"
+    },
+    {
+      "file": "event-booth.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/a4bbaec9a263e5a35209db85cffa52c7.jpg",
+      "section": "local and international events",
+      "dimensions": { "width": 800, "height": 600 },
+      "intendedUse": "Event story block image"
+    },
+    {
+      "file": "certification-halal.jpg",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/d64d14b59a9457c84b523b28c0d99008.jpg",
+      "section": "certifications",
+      "dimensions": { "width": 253, "height": 180 },
+      "intendedUse": "Certification mark card"
+    },
+    {
+      "file": "certification-mesti.png",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/6fa08f39c50826186515e341f36dd58f.png",
+      "section": "certifications",
+      "dimensions": { "width": 321, "height": 299 },
+      "intendedUse": "Certification mark card"
+    },
+    {
+      "file": "certification-trust-my.png",
+      "sourceUrl": "https://ziascompany.com.my/_assets/media/f7539e9ed123f671d13bc29e6b58255b.png",
+      "section": "certifications",
+      "dimensions": { "width": 1200, "height": 600 },
+      "intendedUse": "Certification mark card"
+    },
+    {
+      "file": "contact-pattern.png",
+      "sourceUrl": "blob:https://ziascompany.com.my/46c8fd72-994b-49fc-84be-3ef6b59ab7a9",
+      "section": "contact",
+      "dimensions": { "width": 552, "height": 800 },
+      "intendedUse": "Contact panel decorative pattern; extracted locally because the source is a blob URL"
+    }
+  ]
+}

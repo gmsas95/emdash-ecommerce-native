@@ -1,0 +1,44 @@
+{
+  "name": "@emdash-cms/page-composer",
+  "version": "0.1.0",
+  "description": "Validated native page layouts and constrained theme section composition for EmDash.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./admin": {
+      "development": "./src/admin.tsx",
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.js",
+      "default": "./dist/admin.js"
+    },
+    "./astro": {
+      "development": "./src/astro/index.ts",
+      "types": "./dist/astro/index.d.ts",
+      "import": "./dist/astro/index.js",
+      "default": "./dist/astro/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit false --outDir dist --rootDir src",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "emdash": "workspace:*",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
+  }
+}

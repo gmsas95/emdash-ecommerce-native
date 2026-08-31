@@ -1,0 +1,52 @@
+---
+title: Commerce Distribution
+description: Build and operate the personal EmDash distribution with Commerce Core and native storefront extensions.
+---
+
+The Commerce distribution is an EmDash fork with Commerce Core and first-party native extensions in the same pnpm workspace. It is not a wrapper around EmDash and does not replace the EmDash plugin model.
+
+## Package map
+
+| Package | Responsibility |
+| --- | --- |
+| `@gmsas95/emdash-commerce-contracts` | Provider-neutral Commerce event and bridge contracts |
+| `@emdash-commerce/core` | Products, variants, inventory, carts, checkout, orders, and Commerce admin/API |
+| `@emdash-cms/page-composer` | Versioned section layouts, validation, trusted editor, and rendering contract |
+| `@emdash-cms/analytics-core` | Consent, normalized events, queueing, deduplication, and adapter isolation |
+| `@emdash-cms/analytics-facebook` | Facebook Pixel browser adapter |
+| `@emdash-cms/analytics-tiktok` | TikTok Pixel browser adapter |
+| `@emdash-cms/analytics-ga4` | GA4 browser adapter |
+
+Install the workspace once and register native plugins in `astro.config.mjs`:
+
+```bash
+pnpm install
+```
+
+```js title="astro.config.mjs"
+import { analyticsPlugin } from "@emdash-cms/analytics-core";
+import { pageComposerPlugin } from "@emdash-cms/page-composer";
+import { commercePlugin } from "@emdash-commerce/core";
+
+emdash({
+  plugins: [
+    commercePlugin(),
+    pageComposerPlugin(),
+    analyticsPlugin(),
+  ],
+});
+```
+
+Native packages are versioned with the distribution and run in-process. Keep Commerce Core provider-neutral: payment, shipping, fulfillment, tax, and marketing integrations belong in separately installed sandboxed provider plugins.
+
+## Provider boundary
+
+Commerce Core owns canonical products, inventory, carts, checkout, orders, and payment state transitions. A provider plugin owns its SDK, credentials, API calls, webhook verification, retries, and provider-specific records. Communication uses the signed Commerce bridge; provider plugins must not write directly to Commerce storage tables.
+
+The Cloudflare reference template is [`templates/commerce-cloudflare/README.md`](https://github.com/emdash-cms/emdash/tree/main/templates/commerce-cloudflare). CHIP is the reference external provider, not part of the native Commerce package.
+
+## Compatibility
+
+Release the distribution packages together with a compatible EmDash peer range. Provider plugins declare their supported distribution range independently and must use documented public interfaces rather than private EmDash or Commerce storage internals.
+
+See [Theme composition](/guides/theme-composition/), [Analytics tracking](/guides/analytics-tracking/), and [Provider plugins](/guides/provider-plugins/) for the extension contracts.

@@ -1,0 +1,148 @@
+---
+interface Props { slug: string; }
+const { slug } = Astro.props;
+---
+<div id="product-detail-app" class="product-detail-grid" data-product-slug={slug}>
+  <p class="notice">Loading product details...</p>
+</div>
+<script>
+  import { emitAnalytics } from "../lib/analytics";
+  import { commerceClient, formatMinorAmount, imageUrl } from "../lib/commerce";
+  import type { CatalogItem, CatalogVariant } from "../lib/commerce";
+
+  const root = document.querySelector("#product-detail-app");
+  if (root) {
+    const productSlug = root.getAttribute("data-product-slug");
+    const showError = (message: string, retry = false) => {
+      root.replaceChildren();
+      const error = document.createElement("div");
+      error.className = "error-state";
+      error.textContent = message;
+      if (retry) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "Retry";
+        button.addEventListener("click", load);
+        error.append(button);
+      }
+      root.append(error);
+    };
+
+    async function load() {
+      if (!root) return;
+      root.replaceChildren();
+      const loading = document.createElement("p");
+      loading.className = "notice";
+      loading.textContent = "Loading product details...";
+      root.append(loading);
+      try {
+        const result = await commerceClient.catalog.list();
+        const item = result.items.find((candidate) => candidate.data?.slug === productSlug);
+        if (!item) {
+          showError("Product not found. Return to the catalog to choose another item.");
+          return;
+        }
+        render(item);
+      } catch (error) {
+        showError(error instanceof Error ? error.message : "We couldn't load this product. Retry to request the current Commerce catalog.", true);
+      }
+    }
+
+    function render(item: CatalogItem) {
+      if (!root) return;
+      const product = item.data;
+      const initialVariant = product.hasVariants ? product.variants?.[0] : undefined;
+      emitAnalytics({
+        name: "view_item",
+        source: "client",
+        currency: initialVariant?.currency || product.currency,
+        items: [{ id: initialVariant?.id || item.id, name: product.name, quantity: 1 }],
+      });
+      const gallery = document.createElement("div");
+      gallery.className = "product-gallery";
+      const mainImage = document.createElement("img");
+      mainImage.id = "product-main-image";
+      mainImage.src = imageUrl(product.images?.[0]?.url);
+      mainImage.alt = product.images?.[0]?.alt || product.name || "ZIAS product";
+      mainImage.width = 800;
+      mainImage.height = 800;
+      gallery.append(mainImage);
+
+      const details = document.createElement("div");
+      const meta = document.createElement("p");
+      meta.className = "product-meta";
+      meta.textContent = "Preview item · editable in Commerce admin";
+      const title = document.createElement("h1");
+      title.textContent = product.name || "Untitled product";
+      const description = document.createElement("p");
+      description.className = "lede";
+      description.textContent = product.description || "";
+      const price = document.createElement("p");
+      let selectedVariant: (() => CatalogVariant | undefined) | undefined;
+      let select: HTMLSelectElement | undefined;
+      if (product.hasVariants && product.variants?.length) {
+        const label = document.createElement("label");
+        label.textContent = "Choose a pack";
+        select = document.createElement("select");
+        select.id = "product-variant";
+        select.name = "variant";
+        for (const variant of product.variants) {
+          const option = document.createElement("option");
+          option.value = variant.id;
+          option.textContent = `${variant.name} — ${formatMinorAmount(variant.priceMinor, variant.currency)}`;
+          select.append(option);
+        }
+        selectedVariant = () => product.variants.find((variant) => variant.id === select?.value) || product.variants[0];
+        select.addEventListener("change", () => {
+          const variant = selectedVariant?.();
+          if (variant) price.textContent = formatMinorAmount(variant.priceMinor, variant.currency);
+        });
+      }
+      price.textContent = formatMinorAmount(initialVariant?.priceMinor ?? product.priceMinor ?? 0, initialVariant?.currency || product.currency);
+      const quantityLabel = document.createElement("label");
+      quantityLabel.textContent = "Quantity";
+      const quantity = document.createElement("input");
+      quantity.type = "number";
+      quantity.min = "1";
+      quantity.max = "99";
+      quantity.value = "1";
+      quantity.name = "quantity";
+      quantity.inputMode = "numeric";
+      quantityLabel.append(quantity);
+      const add = document.createElement("button");
+      add.type = "button";
+      add.textContent = "Add to cart";
+      const feedback = document.createElement("p");
+      feedback.setAttribute("role", "status");
+      add.addEventListener("click", async () => {
+        const variant = selectedVariant?.();
+        const quantityValue = Math.max(1, Math.min(99, Number(quantity.value) || 1));
+        add.disabled = true;
+        try {
+          await commerceClient.cart.add({ productId: item.id, ...(variant ? { variantId: variant.id } : {}), quantity: quantityValue });
+          window.dispatchEvent(new Event("commerce-cart-updated"));
+          emitAnalytics({
+            name: "add_to_cart",
+            source: "client",
+            currency: variant?.currency || product.currency,
+            items: [{
+              id: variant?.id || item.id,
+              name: product.name,
+              quantity: quantityValue,
+            }],
+          });
+          feedback.textContent = "Added to cart. Open Cart when you are ready.";
+        } catch (error) {
+          feedback.textContent = error instanceof Error ? error.message : "Unable to add this product to your cart.";
+        } finally {
+          add.disabled = false;
+        }
+      });
+      details.prepend(meta, title, description, price);
+      details.append(quantityLabel, add, feedback);
+      root.replaceChildren(gallery, details);
+    }
+
+    void load();
+  }
+</script>

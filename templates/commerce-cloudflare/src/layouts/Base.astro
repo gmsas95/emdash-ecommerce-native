@@ -1,0 +1,151 @@
+---
+import {
+  EmDashBodyEnd,
+  EmDashBodyStart,
+  EmDashHead,
+} from "emdash/ui";
+import { getMenu, getSiteSettings } from "emdash";
+import { createPublicPageContext } from "emdash/page";
+import LiveSearch from "emdash/ui/search";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import { ZIAS_MEDIA } from "../lib/zias-media";
+import "../styles/storefront.css";
+
+interface Props {
+  title: string;
+  pageTitle?: string | null;
+  description?: string | null;
+  image?: string | null;
+  canonical?: string | null;
+  content?: { collection: string; id: string; slug?: string | null };
+}
+
+const { title, pageTitle, description, image, canonical, content } = Astro.props;
+const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(await getSiteSettings());
+const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
+const pageDescription = description ?? siteTagline;
+const menu = await getMenu("primary");
+const footerMenu = await getMenu("footer");
+const pageCtx = createPublicPageContext({
+  Astro,
+  kind: content ? "content" : "custom",
+  pageType: "website",
+  title: fullTitle,
+  pageTitle: pageTitle ?? title,
+  description: pageDescription,
+  canonical,
+  image,
+  content,
+  siteName: siteTitle,
+});
+const logoSrc = siteLogo?.url ?? ZIAS_MEDIA.logo.src;
+const logoAlt = siteLogo?.alt || siteTitle;
+---
+
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    {pageDescription && <meta name="description" content={pageDescription} />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <EmDashHead page={pageCtx} />
+  </head>
+  <body>
+    <!-- impeccable:direction
+    THESIS: A Sarawak pantry label turns a commerce template into a clear ZIAS food counter.
+    OWN-WORLD: Warm paper, cocoa ink, ZIAS red, turmeric yellow, palm green, thin rules, and generous editorial crops.
+    FIRST-VIEWPORT: Brand, source-backed promise, hero food image, and one direct route into the editable demo catalog.
+    STATES: CMS fallback explains unpublished content; catalog loading, empty, error, and checkout recovery name the next action.
+    RESPONSIVE: The editorial split becomes a stacked reading flow; the product rail becomes a two-column grid; controls stay keyboard-first.
+    REFUSES: Generic railway dashboards, gradients, fake proof, pill-only controls, and hardcoded product records.
+    -->
+    <EmDashBodyStart page={pageCtx} />
+    <div class="demo-strip">
+      <p><strong>Client preview</strong> — Products, prices, and inventory are demo values editable in Commerce admin.</p>
+      <a href="/shop">Open catalog <span aria-hidden="true">→</span></a>
+    </div>
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="brand" href="/" aria-label={`${siteTitle} home`}>
+          <img class="brand-mark" src={logoSrc} alt={logoAlt} />
+          <span class="brand-name">{siteTitle}</span>
+        </a>
+        <div class="nav-links">
+          {menu?.items.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+          <a class="cart-link" href="/cart">Cart <span data-cart-count aria-live="polite">0</span></a>
+        </div>
+        <LiveSearch placeholder="Search the pantry" collections={["pages", "story_blocks"]} />
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <a class="brand brand--footer" href="/" aria-label={`${siteTitle} home`}>
+          <img class="brand-mark" src={logoSrc} alt={logoAlt} />
+          <span class="brand-name">{siteTitle}</span>
+        </a>
+        <p>{siteTagline}</p>
+        <p class="footer-note">A preview storefront for client review. Replace demo catalog values before launch.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        {footerMenu?.items.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+      </nav>
+    </footer>
+    <EmDashBodyEnd page={pageCtx} />
+    <script>
+      import { commerceClient } from "../lib/commerce";
+      import { emitAnalytics, initAnalytics } from "../lib/analytics";
+
+      initAnalytics();
+      emitAnalytics({
+        name: "page_view",
+        source: "client",
+        page: {
+          url: window.location.href,
+          path: window.location.pathname,
+          title: document.title,
+        },
+      });
+      for (const form of document.querySelectorAll("form")) {
+        const searchInput = form.querySelector('input[type="search"]');
+        if (!(searchInput instanceof HTMLInputElement)) continue;
+        form.addEventListener("submit", () => {
+          const query = searchInput.value.trim();
+          if (!query) return;
+          emitAnalytics({
+            name: "search",
+            source: "client",
+            properties: { query },
+          });
+        });
+      }
+      for (const form of document.querySelectorAll('form[data-analytics-event="lead"]')) {
+        form.addEventListener("submit", () => {
+          emitAnalytics({
+            name: "lead",
+            source: "client",
+            properties: { form: "newsletter" },
+          });
+        });
+      }
+
+      const countNode = document.querySelector("[data-cart-count]");
+      const updateCartCount = async () => {
+        if (!countNode) return;
+        try {
+          const cart = await commerceClient.cart.get();
+          countNode.textContent = String(cart.lines.reduce((total, line) => total + line.quantity, 0));
+        } catch {
+          countNode.textContent = "0";
+        }
+      };
+      void updateCartCount();
+      window.addEventListener("commerce-cart-updated", () => { void updateCartCount(); });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+---
+import { getSiteSettings } from "emdash";
+import { Image, PortableText } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import ComposerSections from "../components/ComposerSections.astro";
+import ClientCatalog from "../components/ClientCatalog.astro";
+import ZiasStoryBlocks from "../components/ZiasStoryBlocks.astro";
+import DemoNotice from "../components/DemoNotice.astro";
+import { loadCmsPage, loadPageLayout } from "../lib/cms";
+import { ZIAS_MEDIA } from "../lib/zias-media";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+const { page: homePage, cacheHint } = await loadCmsPage("home");
+Astro.cache.set(cacheHint);
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(await getSiteSettings());
+const title = homePage?.data.title ?? siteTitle;
+const heroImage = homePage?.data.featured_image;
+const heroImageSource = heroImage && ("url" in heroImage ? heroImage.url : "src" in heroImage ? heroImage.src : undefined);
+const useLocalHeroFallback = import.meta.env.DEV || import.meta.env.PUBLIC_ZIAS_DEMO_MEDIA_FALLBACK === "true";
+const homeLayout = await loadPageLayout("home", Astro.url, Astro.locals.emdash?.handlePublicPluginApiRoute);
+---
+<Base title={title} description={siteTagline} content={homePage ? { collection: "pages", id: homePage.data.id ?? homePage.id, slug: homePage.id } : undefined}>
+  {homeLayout ? (
+    <ComposerSections layout={homeLayout} />
+  ) : (
+    <section class="home-hero" aria-labelledby="home-title">
+      {homePage ? (
+        <>
+          <div class="home-hero__copy" data-cms-collection="pages" data-cms-id={homePage.id}>
+            <h1 id="home-title" {...(homePage.edit?.title ?? {})}>{homePage.data.title ?? siteTitle}</h1>
+            <div class="rich-text" {...(homePage.edit?.content ?? {})}>
+              {homePage.data.content ? <PortableText value={homePage.data.content as never} /> : <p>{siteTagline}</p>}
+            </div>
+            <a class="button button--arrow" href="/shop">Browse the preview catalog <span aria-hidden="true">→</span></a>
+          </div>
+          {heroImage && (
+            <div class="home-hero__media" {...(homePage.edit?.featured_image ?? {})}>
+              {heroImageSource ? <Image image={heroImage as never} /> : useLocalHeroFallback ? <img src={ZIAS_MEDIA.heroFood.src} alt={ZIAS_MEDIA.heroFood.alt} /> : null}
+            </div>
+          )}
+        </>
+      ) : (
+        <div class="page-wrap section">
+          <h1 id="home-title">Homepage content is not published.</h1>
+          <p>Publish the <code>home</code> page from EmDash Admin to control this storefront.</p>
+          <a class="button" href="/_emdash/admin/content/pages/new">Create homepage content</a>
+        </div>
+      )}
+    </section>
+  )}
+  <section class="section section--catalog" aria-labelledby="featured-heading">
+    <div class="section-heading">
+      <div>
+        <h2 id="featured-heading">Good things, ready for the kitchen.</h2>
+      </div>
+      <a class="text-link" href="/shop">View all <span aria-hidden="true">→</span></a>
+    </div>
+    <DemoNotice compact />
+    <ClientCatalog id="featured-products" limit={4} />
+  </section>
+  <section class="section section--story" aria-label="About ZIAS Company">
+    <ZiasStoryBlocks />
+  </section>
+</Base>

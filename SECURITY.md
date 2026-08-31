@@ -40,6 +40,14 @@ High-signal reports may include issues such as:
 - migration, import, or setup flows that expose sensitive data;
 - supply-chain or template defaults that create a realistic unsafe deployment.
 
+For the Commerce distribution, also report:
+
+- bypasses of Commerce Core's authoritative order, inventory, checkout, or payment-state transitions;
+- invalid or unsigned provider bridge messages accepted by native Commerce routes;
+- page-composer layouts that execute arbitrary HTML, JavaScript, CSS, or pixel coordinates;
+- analytics scripts or events that load before required consent or expose payment credentials, access tokens, full addresses, or unnecessary personal data;
+- sandboxed provider plugins that can cross their declared capability or host boundary.
+
 Lower-signal or usually out-of-scope reports include:
 
 - scanner output without a working reproduction;

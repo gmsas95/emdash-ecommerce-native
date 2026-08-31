@@ -1,0 +1,378 @@
+{
+  "$schema": "https://emdashcms.com/seed.schema.json",
+  "version": "1",
+  "meta": {
+    "name": "ZIAS Company",
+    "description": "A client-demo storefront for ZIAS Company, a Sarawak food producer.",
+    "author": "Local Codex"
+  },
+  "settings": {
+    "title": "ZIAS Company",
+    "tagline": "Where Every Bite Tells a Story. . .",
+    "logo": {
+      "$media": {
+        "url": "https://ziascompany.com.my/_assets/media/bc1d8dfd08c122b0e772d77189148d49.png",
+        "alt": "ZIAS — Nang Nyaman Aihhh!",
+        "filename": "zias-logo.png"
+      }
+    }
+  },
+  "collections": [
+    {
+      "slug": "pages",
+      "label": "Pages",
+      "labelSingular": "Page",
+      "urlPattern": "/{slug}",
+      "supports": ["drafts", "revisions", "search", "seo"],
+      "fields": [
+        { "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+        { "slug": "featured_image", "label": "Featured Image", "type": "image" },
+        { "slug": "content", "label": "Content", "type": "portableText", "searchable": true }
+      ]
+    },
+    {
+      "slug": "story_blocks",
+      "label": "Story Blocks",
+      "labelSingular": "Story Block",
+      "supports": ["drafts", "revisions", "search"],
+      "fields": [
+        { "slug": "kicker", "label": "Kicker", "type": "string", "searchable": true },
+        { "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+        { "slug": "image", "label": "Image", "type": "image" },
+        { "slug": "content", "label": "Content", "type": "portableText", "searchable": true },
+        { "slug": "sort_order", "label": "Sort Order", "type": "integer", "required": true }
+      ]
+    },
+    {
+      "slug": "posts",
+      "label": "Posts",
+      "labelSingular": "Post",
+      "supports": ["drafts", "revisions", "search", "seo"],
+      "fields": [
+        { "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+        { "slug": "featured_image", "label": "Featured Image", "type": "image" },
+        { "slug": "content", "label": "Content", "type": "portableText", "searchable": true },
+        { "slug": "excerpt", "label": "Excerpt", "type": "text" }
+      ]
+    }
+  ],
+  "menus": [
+    {
+      "name": "primary",
+      "label": "Primary Navigation",
+      "items": [
+        { "type": "custom", "label": "Home", "url": "/" },
+        { "type": "custom", "label": "Shop", "url": "/shop" },
+        { "type": "custom", "label": "Our story", "url": "/about" },
+        { "type": "custom", "label": "Stockists", "url": "/about#stockists" },
+        { "type": "custom", "label": "Contact", "url": "/contact" }
+      ]
+    },
+    {
+      "name": "footer",
+      "label": "Footer Navigation",
+      "items": [
+        { "type": "custom", "label": "Shipping & returns", "url": "/shipping-returns" },
+        { "type": "custom", "label": "Privacy", "url": "/privacy" },
+        { "type": "custom", "label": "Terms", "url": "/terms" },
+        { "type": "custom", "label": "Contact", "url": "/contact" }
+      ]
+    }
+  ],
+  "widgetAreas": [],
+  "sections": [
+    {
+      "slug": "zias-hero",
+      "title": "ZIAS hero",
+      "description": "A warm editorial hero for the home page.",
+      "keywords": ["zias", "hero", "food", "sarawak"],
+      "source": "theme",
+      "content": [
+        { "_type": "block", "style": "h1", "children": [{ "_type": "span", "text": "Where Every Bite Tells a Story. . ." }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Ready-to-eat and ready-to-cook food products from ZIAS Company." }] }
+      ]
+    },
+    {
+      "slug": "zias-philosophy",
+      "title": "ZIAS philosophy",
+      "description": "Vision and mission copy for an editorial story section.",
+      "keywords": ["zias", "philosophy", "vision", "mission"],
+      "source": "theme",
+      "content": [
+        { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Our Philosophies" }] },
+        { "_type": "block", "style": "h3", "children": [{ "_type": "span", "text": "Vision" }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "To be the leading Bumiputera company in Malaysia, recognized for competitiveness and dynamism in fulfilling market demands locally and globally." }] },
+        { "_type": "block", "style": "h3", "children": [{ "_type": "span", "text": "Mission" }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "To deliver exceptional catering services and high-quality food and beverage products at competitive prices, ensuring customer satisfaction and value." }] }
+      ]
+    },
+    {
+      "slug": "zias-product-families",
+      "title": "ZIAS product families",
+      "description": "Product-family introduction for a commerce storefront.",
+      "keywords": ["zias", "products", "ready-to-eat", "ready-to-cook"],
+      "source": "theme",
+      "content": [
+        { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Our Products" }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Ready-to-Eat Meal & Ground Spices. Ready-to-Cook Meal. Cooking paste and marinade ingredients." }] }
+      ]
+    },
+    {
+      "slug": "zias-stockists",
+      "title": "ZIAS stockists",
+      "description": "Stockist introduction for a location section.",
+      "keywords": ["zias", "stockists", "distributors", "agents"],
+      "source": "theme",
+      "content": [
+        { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Our Distributor / Stockists / Agents" }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "ZIAS products are available through vendors and stockists across Sarawak and West Malaysia, including Emart, Everise Metrocity, Merdeka Palace, Vivacity, Dapur Melanau Kuching, and Taste of Borneo at Kuching International Airport." }] }
+      ]
+    },
+    {
+      "slug": "zias-events",
+      "title": "ZIAS events",
+      "description": "Local and international event story section.",
+      "keywords": ["zias", "events", "MIHAS", "SIFEX", "SIE"],
+      "source": "theme",
+      "content": [
+        { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Local / International Event" }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Malaysia International Halal Showcase (MIHAS), Selangor International Food & Beverage Expo (SIE), Borneo Showcase MARA, and Sabah International Food Expo (SIFEX)." }] }
+      ]
+    },
+    {
+      "slug": "zias-certifications",
+      "title": "ZIAS certifications",
+      "description": "Certification reference section with editable copy.",
+      "keywords": ["zias", "certification", "halal"],
+      "source": "theme",
+      "content": [
+        { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Our Certification" }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "No Pensijilan: ME 1023073-0/1. MS 1500:2019 1 043-12/2023. No Pensijilan: TMC 2-Q/0045/08/24." }] }
+      ]
+    },
+    {
+      "slug": "zias-contact",
+      "title": "ZIAS contact",
+      "description": "Contact details section for the editor.",
+      "keywords": ["zias", "contact", "address", "email"],
+      "source": "theme",
+      "content": [
+        { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Where to reach us" }] },
+        { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Lot 6, (Ground Floor), Lot 14182, Section 65, KTLD 7E, Metrocity Commercial Precinct, Jalan Matang, 93050 Kuching Sarawak. Email: ziascompany2017@gmail.com" }] }
+      ]
+    }
+  ],
+  "content": {
+    "pages": [
+      {
+        "id": "home",
+        "slug": "home",
+        "status": "published",
+        "data": {
+          "title": "Where Every Bite Tells a Story. . .",
+          "featured_image": {
+            "$media": {
+              "url": "https://ziascompany.com.my/_assets/media/953063d2a561d9b21d8d7775a2b1d09b.jpg",
+              "alt": "Grilled food served with sauces and vegetables",
+              "filename": "zias-hero-food.jpg"
+            }
+          },
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "We are Halal producer of Ready To Eat and Ready To Cook product which will help you at your kitchen. Contact us for any enquiry." }] },
+            { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Rooted in Sarawak" }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "We support the local economy by producing downstream products based on local resources such as Sarawak's black pepper and palm sugar." }] }
+          ]
+        }
+      },
+      {
+        "id": "about",
+        "slug": "about",
+        "status": "published",
+        "data": {
+          "title": "Our story",
+          "featured_image": {
+            "$media": {
+              "url": "https://ziascompany.com.my/_assets/media/9fb6d2c34381423b3b68e83a8fbcd46b.jpg",
+              "alt": "Sago palm fruit among green stems",
+              "filename": "zias-philosophy-palm.jpg"
+            }
+          },
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "We are committed to conducting business in a way that benefits society and the environment." }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "ZIAS Company is based at Metrocity Commercial Precinct in Kuching, Sarawak." }] }
+          ]
+        }
+      },
+      {
+        "id": "contact",
+        "slug": "contact",
+        "status": "published",
+        "data": {
+          "title": "Where to reach us",
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Lot 6, (Ground Floor), Lot 14182, Section 65, KTLD 7E, Metrocity Commercial Precinct, Jalan Matang, 93050 Kuching Sarawak." }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Email: ziascompany2017@gmail.com. Website: www.ziascompany.com.my" }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "+6016.8984238 · +6013.8748677" }] }
+          ]
+        }
+      },
+      {
+        "id": "shipping-returns",
+        "slug": "shipping-returns",
+        "status": "published",
+        "data": {
+          "title": "Shipping & returns",
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Delivery options, rates, and estimated windows are confirmed for your address at checkout. This preview storefront uses demo catalog values until the operator replaces them in Commerce admin." }] },
+            { "_type": "block", "style": "h2", "children": [{ "_type": "span", "text": "Returns" }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Contact the store before sending an item back. Include your order ID and the email used at checkout so support can confirm eligibility and next steps." }] }
+          ]
+        }
+      },
+      {
+        "id": "checkout",
+        "slug": "checkout",
+        "status": "published",
+        "data": {
+          "title": "Review your order",
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Commerce confirms availability and recalculates the total before payment. Enter your delivery details, choose an available payment method, and continue securely." }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Payment details are handled by the selected payment provider. This storefront does not store card details." }] }
+          ]
+        }
+      },
+      {
+        "id": "privacy",
+        "slug": "privacy",
+        "status": "published",
+        "data": {
+          "title": "Privacy",
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "We use the information you provide to process orders, communicate about delivery, prevent fraud, and provide support. Payment details are entered on the selected provider's hosted checkout and are not stored by this storefront." }] }
+          ]
+        }
+      },
+      {
+        "id": "terms",
+        "slug": "terms",
+        "status": "published",
+        "data": {
+          "title": "Terms",
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "By placing an order, you confirm that your delivery details are accurate and that you are authorized to use the selected payment method. Prices and availability are confirmed by Commerce at checkout." }] }
+          ]
+        }
+      }
+    ],
+    "story_blocks": [
+      {
+        "id": "philosophy",
+        "slug": "philosophy",
+        "status": "published",
+        "data": {
+          "kicker": "01 / Our roots",
+          "title": "Our Philosophies",
+          "image": {
+            "$media": {
+              "url": "https://ziascompany.com.my/_assets/media/9fb6d2c34381423b3b68e83a8fbcd46b.jpg",
+              "alt": "Sago palm fruit among green stems",
+              "filename": "zias-philosophy-palm.jpg"
+            }
+          },
+          "content": [
+            { "_type": "block", "style": "h3", "children": [{ "_type": "span", "text": "Vision" }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "To be the leading Bumiputera company in Malaysia, recognized for competitiveness and dynamism in fulfilling market demands locally and globally." }] },
+            { "_type": "block", "style": "h3", "children": [{ "_type": "span", "text": "Mission" }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "To deliver exceptional catering services and high-quality food and beverage products at competitive prices, ensuring customer satisfaction and value." }] }
+          ],
+          "sort_order": 10
+        }
+      },
+      {
+        "id": "stockists",
+        "slug": "stockists",
+        "status": "published",
+        "data": {
+          "kicker": "02 / Find us",
+          "title": "Across Sarawak and beyond",
+          "image": {
+            "$media": {
+              "url": "https://ziascompany.com.my/_assets/media/9dc4d5617825dac6ca8397119b4c40d8.jpg",
+              "alt": "ZIAS product display at a stockist",
+              "filename": "zias-stockist-taste-borneo.jpg"
+            }
+          },
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "The company’s products are available at various prominent vendors, including Supermarket Emart branches in Matang, Batu Kawa, Summermall, and Moyan, as well as Everise Metrocity, Merdeka Palace, and Vivacity." }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "They are also distributed through Dapur Melanau Kuching, eShop Peladang Kota Samarahan, Arked MARA Sibu, Izzque Pasar Segar Miri, Halal Smart Centre Miri, Petronas Station in Miri and La Achee Porra, Jalan Tuanku Abdul Rahman, Kuala Lumpur." }] }
+          ],
+          "sort_order": 30
+        }
+      },
+      {
+        "id": "events",
+        "slug": "events",
+        "status": "published",
+        "data": {
+          "kicker": "03 / In the field",
+          "title": "Local / International Event",
+          "image": {
+            "$media": {
+              "url": "https://ziascompany.com.my/_assets/media/72196195296d3a011402f621c27e4e6e.jpg",
+              "alt": "ZIAS at a food and beverage event",
+              "filename": "zias-event-mihas.jpg"
+            }
+          },
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Malaysia International Halal Showcase (MIHAS) 2023 & 2024, Selangor International Food & Beverage Expo (SIE) 2024, Borneo Showcase MARA 2024, and Sabah International Food Expo (SIFEX) 2023/2024." }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "We sincerely thank all government agencies for inviting us to these meaningful programs. It was a great opportunity to learn, engage, and contribute alongside others." }] }
+          ],
+          "sort_order": 40
+        }
+      },
+      {
+        "id": "certifications",
+        "slug": "certifications",
+        "status": "published",
+        "data": {
+          "kicker": "04 / Our standards",
+          "title": "Our Certification",
+          "image": {
+            "$media": {
+              "url": "https://ziascompany.com.my/_assets/media/f7539e9ed123f671d13bc29e6b58255b.png",
+              "alt": "ZIAS certification mark",
+              "filename": "zias-certification-trust-my.png"
+            }
+          },
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "No Pensijilan: ME 1023073-0/1" }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "MS 1500:2019 1 043-12/2023" }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "No Pensijilan: TMC 2-Q/0045/08/24" }] }
+          ],
+          "sort_order": 50
+        }
+      },
+      {
+        "id": "contact",
+        "slug": "contact",
+        "status": "published",
+        "data": {
+          "kicker": "05 / Come say hi",
+          "title": "Where to reach us",
+          "image": {
+            "$media": {
+              "url": "https://ziascompany.com.my/_assets/media/4358e7bb4d27c4a31b702cf4087ab851.png",
+              "alt": "ZIAS contact illustration",
+              "filename": "zias-contact-illustration.png"
+            }
+          },
+          "content": [
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "Lot 6, (Ground Floor), Lot 14182, Section 65, KTLD 7E, Metrocity Commercial Precinct, Jalan Matang, 93050 Kuching Sarawak." }] },
+            { "_type": "block", "style": "normal", "children": [{ "_type": "span", "text": "ziascompany2017@gmail.com · +6016.8984238 · +6013.8748677" }] }
+          ],
+          "sort_order": 60
+        }
+      }
+    ]
+  }
+}

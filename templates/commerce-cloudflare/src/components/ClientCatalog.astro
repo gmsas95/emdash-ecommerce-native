@@ -1,0 +1,82 @@
+---
+interface Props { id: string; limit?: number; }
+const { id, limit = 50 } = Astro.props;
+---
+<div id={id} data-catalog-grid data-limit={limit} class="product-grid" aria-live="polite">
+  <p class="notice catalog-status">Loading the preview collection...</p>
+</div>
+<script>
+  import { commerceClient, formatMinorAmount, imageUrl } from "../lib/commerce";
+  import type { CatalogItem } from "../lib/commerce";
+
+  const roots = [...document.querySelectorAll<HTMLElement>("[data-catalog-grid]")];
+  let catalogPromise: ReturnType<typeof commerceClient.catalog.list> | undefined;
+
+  const showMessage = (root: HTMLElement, message: string, retry = false) => {
+    root.replaceChildren();
+    const box = document.createElement("div");
+    box.className = retry ? "error-state" : "empty-state";
+    box.textContent = message;
+    if (retry) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Retry";
+      button.addEventListener("click", () => { void load(root); });
+      box.append(button);
+    }
+    root.append(box);
+  };
+
+  const render = (root: HTMLElement, items: CatalogItem[]) => {
+    root.replaceChildren();
+    if (!items.length) {
+      showMessage(root, "No published products are available. Publish a product in Commerce admin to populate this catalog.");
+      return;
+    }
+    for (const product of items.slice(0, Number(root.getAttribute("data-limit") || 50))) {
+      const data = product.data;
+      const link = document.createElement("a");
+      link.className = "product-card";
+      link.href = `/shop/${encodeURIComponent(data.slug)}`;
+      const productImage = document.createElement("img");
+      productImage.src = imageUrl(data.images?.[0]?.url);
+      productImage.alt = data.images?.[0]?.alt || data.name || "ZIAS product";
+      productImage.loading = "lazy";
+      productImage.width = 800;
+      productImage.height = 800;
+      const body = document.createElement("div");
+      body.className = "product-card-body";
+      const title = document.createElement("h3");
+      title.textContent = data.name || "Untitled product";
+      const detail = document.createElement("small");
+      detail.textContent = "Preview item · editable in Commerce admin";
+      const firstVariant = data.hasVariants ? data.variants?.[0] : undefined;
+      const amount = document.createElement("p");
+      const minor = firstVariant?.priceMinor ?? data.priceMinor;
+      amount.textContent = typeof minor === "number" && Number.isSafeInteger(minor) && minor >= 0
+        ? formatMinorAmount(minor, firstVariant?.currency || data.currency)
+        : "Price set in Commerce admin";
+      body.append(title, detail, amount);
+      link.append(productImage, body);
+      root.append(link);
+    }
+  };
+
+  async function load(root: HTMLElement) {
+    root.replaceChildren();
+    const loading = document.createElement("p");
+    loading.className = "notice catalog-status";
+    loading.textContent = "Loading the preview collection...";
+    root.append(loading);
+    try {
+      catalogPromise ??= commerceClient.catalog.list();
+      const result = await catalogPromise;
+      render(root, result.items);
+    } catch {
+      catalogPromise = undefined;
+      showMessage(root, "We couldn't load the collection. Retry to request the current Commerce catalog.", true);
+    }
+  }
+
+  for (const root of roots) void load(root);
+</script>

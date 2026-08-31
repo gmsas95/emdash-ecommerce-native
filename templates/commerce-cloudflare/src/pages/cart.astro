@@ -1,0 +1,139 @@
+---
+import Base from "../layouts/Base.astro";
+import DemoNotice from "../components/DemoNotice.astro";
+---
+<Base title="Cart" description="Review your ZIAS preview selection.">
+  <div class="page-wrap section cart-page">
+    <h1>Cart</h1>
+    <DemoNotice compact />
+    <div id="cart-app" class="cart-layout" aria-live="polite"></div>
+    <script>
+      import { emitAnalytics } from "../lib/analytics";
+      import { commerceClient, formatMinorAmount } from "../lib/commerce";
+      import type { StoreCart } from "@emdash-commerce/core/storefront/types";
+
+      const root = document.querySelector("#cart-app");
+      if (root) {
+        const showError = (message: string) => {
+          root.replaceChildren();
+          const error = document.createElement("div");
+          error.className = "error-state";
+          error.textContent = message;
+          const retry = document.createElement("button");
+          retry.type = "button";
+          retry.textContent = "Retry";
+          retry.addEventListener("click", load);
+          error.append(document.createElement("br"), retry);
+          root.append(error);
+        };
+
+        const render = (cart: StoreCart) => {
+          root.replaceChildren();
+          if (!cart.lines.length) {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.textContent = "Your cart is empty. Browse the preview catalog to choose a product.";
+            const link = document.createElement("a");
+            link.className = "button";
+            link.href = "/shop";
+            link.textContent = "Browse catalog";
+            empty.append(document.createElement("br"), link);
+            root.append(empty);
+            return;
+          }
+          const list = document.createElement("div");
+          list.className = "cart-list";
+          for (const line of cart.lines) {
+            const row = document.createElement("article");
+            row.className = "cart-row";
+            const title = document.createElement("h2");
+            title.textContent = line.name || line.productId;
+            const amount = document.createElement("p");
+            amount.textContent = `${formatMinorAmount(line.unitAmountMinor, line.currency)} each`;
+            const lineTotal = document.createElement("strong");
+            lineTotal.textContent = formatMinorAmount(line.totalMinor, line.currency);
+            const quantity = document.createElement("input");
+            quantity.type = "number";
+            quantity.min = "1";
+            quantity.max = "99";
+            quantity.value = String(line.quantity);
+            quantity.setAttribute("aria-label", `Quantity for ${line.name || line.productId}`);
+            quantity.addEventListener("change", async () => {
+              quantity.disabled = true;
+              try {
+                const updated = await commerceClient.cart.update({ lineId: line.lineId, quantity: Math.max(1, Math.min(99, Number(quantity.value) || 1)) });
+                render(updated);
+                window.dispatchEvent(new Event("commerce-cart-updated"));
+              } catch (error) {
+                showError(error instanceof Error ? error.message : "Unable to update your cart.");
+              }
+            });
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "secondary";
+            remove.textContent = "Remove";
+            remove.addEventListener("click", async () => {
+              remove.disabled = true;
+              try {
+                const updated = await commerceClient.cart.remove(line.lineId);
+                render(updated);
+                emitAnalytics({
+                  name: "remove_from_cart",
+                  source: "client",
+                  currency: line.currency,
+                  items: [{
+                    id: line.variantId || line.productId,
+                    name: line.name,
+                    quantity: line.quantity,
+                  }],
+                });
+                window.dispatchEvent(new Event("commerce-cart-updated"));
+              } catch (error) {
+                showError(error instanceof Error ? error.message : "Unable to update your cart.");
+              }
+            });
+            row.append(title, amount, lineTotal, quantity, remove);
+            list.append(row);
+          }
+          root.append(list);
+          const summary = document.createElement("div");
+          summary.className = "cart-summary";
+          const totalLabel = document.createElement("span");
+          totalLabel.textContent = "Current total";
+          const totalValue = document.createElement("strong");
+          totalValue.textContent = formatMinorAmount(cart.totals.totalMinor, cart.currency);
+          summary.append(totalLabel, totalValue);
+          root.append(summary);
+          const note = document.createElement("p");
+          note.className = "notice";
+          note.textContent = cart.availability.some((entry) => entry.status === "unavailable")
+            ? "One or more items need attention before checkout."
+            : "Final totals and availability are confirmed by Commerce at checkout.";
+          root.append(note);
+          const checkout = document.createElement("a");
+          checkout.className = "button";
+          checkout.href = "/checkout";
+          checkout.textContent = "Continue to checkout";
+          root.append(checkout);
+        };
+
+        async function load() {
+          if (!root) return;
+          root.replaceChildren();
+          const loading = document.createElement("p");
+          loading.className = "notice";
+          loading.textContent = "Loading your current cart...";
+          root.append(loading);
+          try {
+            render(await commerceClient.cart.get());
+          } catch (error) {
+            showError(error instanceof Error ? error.message : "We couldn't load your cart.");
+          }
+        }
+
+        window.addEventListener("commerce-cart-updated", () => { void load(); });
+        void load();
+      }
+    </script>
+  </div>
+</Base>

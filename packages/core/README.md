@@ -84,6 +84,10 @@ const sidebar = await getWidgetArea("sidebar");
 const results = await search("hello world", { collections: ["posts"] });
 ```
 
+## Commerce distribution
+
+The personal Commerce distribution layers `@emdash-commerce/core`, `@emdash-cms/page-composer`, and `@emdash-cms/analytics-core` on top of this package. Commerce Core, not `emdash`, owns products, carts, checkout, orders, and provider bridge state. External payment, shipping, fulfillment, tax, and marketing providers remain sandboxed plugins.
+
 ## Documentation
 
 See the [documentation site](https://docs.emdashcms.com) for guides, API reference, and plugin development.

@@ -1,0 +1,46 @@
+---
+import Base from "../../layouts/Base.astro";
+import DemoNotice from "../../components/DemoNotice.astro";
+const resultStatus = Astro.url.searchParams.get("status")?.toLowerCase() ?? "pending";
+const title = resultStatus === "cancel" || resultStatus === "cancelled" ? "Payment cancelled" : resultStatus === "failure" || resultStatus === "failed" ? "Payment needs attention" : "Payment status";
+const copy = resultStatus === "cancel" || resultStatus === "cancelled" ? "The payment return was marked cancelled. Your cart is still available." : resultStatus === "failure" || resultStatus === "failed" ? "The payment return was marked unsuccessful. You can return to checkout and try again." : "A payment return was received. Confirm the order status before considering payment complete.";
+---
+<Base title={title} description={copy}>
+  <div class="page-wrap section result-page">
+    <h1 id="result-title">{title}</h1>
+    <p id="result-copy" class="lede">{copy}</p>
+    <DemoNotice compact />
+    <p id="verification-status" class="notice" role="status">Payment confirmation is based on server order status, not this return URL.</p>
+    <p><a id="continue-link" class="button" href="/checkout">Return to checkout</a></p>
+    <p><a id="order-link" href="/orders/">View your order if you have the order ID.</a></p>
+    <script is:inline define:vars={{ resultStatus }}>
+      (() => {
+        const titleNode = document.querySelector("#result-title");
+        const copyNode = document.querySelector("#result-copy");
+        const statusNode = document.querySelector("#verification-status");
+        const continueLink = document.querySelector("#continue-link");
+        const orderId = window.localStorage.getItem("commerce-order-id");
+        const orderLink = document.querySelector("#order-link");
+        if (orderId && orderLink instanceof HTMLAnchorElement) orderLink.href = `/orders/${encodeURIComponent(orderId)}`;
+
+        const renderStatus = (status) => {
+          const returned = status === "returned";
+          const cancelled = status === "cancelled";
+          const failed = status === "failed";
+          const nextTitle = returned ? "Payment return received" : cancelled ? "Payment cancelled" : failed ? "Payment needs attention" : "Payment status";
+          const nextCopy = returned ? "A payment return was received. Confirm the order status before considering payment complete." : cancelled ? "The payment return was marked cancelled. Your cart is still available." : failed ? "The payment return was marked unsuccessful. You can return to checkout and try again." : "We could not confirm the payment yet. Return to checkout or contact support if the issue persists.";
+          if (titleNode) titleNode.textContent = nextTitle;
+          if (copyNode) copyNode.textContent = nextCopy;
+          if (statusNode) statusNode.textContent = returned ? "Return received; payment confirmation is pending." : "";
+          if (continueLink instanceof HTMLAnchorElement) {
+            continueLink.href = "/checkout";
+            continueLink.textContent = "Return to checkout";
+          }
+        };
+
+        const normalizedStatus = resultStatus === "cancel" ? "cancelled" : resultStatus === "failure" ? "failed" : resultStatus;
+        renderStatus(normalizedStatus === "success" || normalizedStatus === "paid" ? "returned" : normalizedStatus);
+      })();
+    </script>
+  </div>
+</Base>

@@ -1,0 +1,37 @@
+{
+  "name": "@emdash-cms/analytics-core",
+  "version": "0.1.0",
+  "description": "Consent-aware normalized site and commerce analytics for EmDash.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./runtime": {
+      "development": "./src/runtime.ts",
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js",
+      "default": "./dist/runtime.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit false --outDir dist --rootDir src",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "emdash": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
+  }
+}

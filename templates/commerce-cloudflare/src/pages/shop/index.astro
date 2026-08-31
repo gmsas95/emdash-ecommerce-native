@@ -1,0 +1,15 @@
+---
+import Base from "../../layouts/Base.astro";
+import ClientCatalog from "../../components/ClientCatalog.astro";
+import DemoNotice from "../../components/DemoNotice.astro";
+---
+<Base title="Shop" description="Browse the ZIAS preview collection.">
+  <div class="page-wrap section shop-page">
+    <div class="shop-intro">
+      <h1>Ready for the kitchen.</h1>
+      <p class="lede">Explore ready-to-eat, ready-to-cook, ground-spices, and cooking paste preview items.</p>
+    </div>
+    <DemoNotice />
+    <ClientCatalog id="shop-products" />
+  </div>
+</Base>

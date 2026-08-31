@@ -1,0 +1,12 @@
+---
+import Base from "../../layouts/Base.astro";
+import ClientProductDetail from "../../components/ClientProductDetail.astro";
+import DemoNotice from "../../components/DemoNotice.astro";
+const slug = Astro.params.slug ?? "";
+---
+<Base title="Product" description="ZIAS product preview detail.">
+  <div class="page-wrap section product-page">
+    <DemoNotice compact />
+    <ClientProductDetail slug={slug} />
+  </div>
+</Base>

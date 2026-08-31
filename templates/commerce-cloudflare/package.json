@@ -1,0 +1,38 @@
+{
+  "name": "@emdash-cms/template-commerce-cloudflare",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "emdash": {
+    "seed": "seed/seed.json"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "pnpm --filter @gmsas95/emdash-commerce-contracts build && pnpm --filter @emdash-commerce/core build && astro build",
+    "preview": "astro preview",
+    "deploy": "pnpm run build && wrangler deploy",
+    "typecheck": "astro check && pnpm --filter @gmsas95/emdash-commerce-contracts typecheck && pnpm --filter @emdash-commerce/core typecheck"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "catalog:",
+    "@astrojs/react": "catalog:",
+    "@chip-in-asia/plugin-chip-for-emdash": "github:gmsas95/chip-for-emdash#5d0ff8b",
+    "@emdash-cms/analytics-core": "workspace:*",
+    "@emdash-cms/analytics-facebook": "workspace:*",
+    "@emdash-cms/analytics-ga4": "workspace:*",
+    "@emdash-cms/analytics-tiktok": "workspace:*",
+    "@emdash-cms/cloudflare": "workspace:*",
+    "@emdash-cms/page-composer": "workspace:*",
+    "@emdash-commerce/core": "workspace:*",
+    "@gmsas95/emdash-commerce-contracts": "workspace:*",
+    "astro": "catalog:",
+    "emdash": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@astrojs/check": "catalog:",
+    "@cloudflare/workers-types": "catalog:",
+    "wrangler": "catalog:"
+  }
+}
