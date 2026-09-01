@@ -46,3 +46,9 @@ describe("renderThemeCss", () => {
     ).toContain("--theme-color-brand: #176b59;");
   });
 });
+ 
+it("ships neutral starter content", async () => {
+  const seed = (await import("../seed/seed.json")).default;
+  expect(seed.meta.name).toBe("EmDash Commerce Starter");
+  expect(JSON.stringify(seed)).not.toContain("ZIAS");
+});

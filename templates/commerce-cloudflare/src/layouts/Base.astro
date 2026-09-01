@@ -9,7 +9,6 @@ import { createPublicPageContext } from "emdash/page";
 import LiveSearch from "emdash/ui/search";
 import { emitThemeCss, resolveThemeSettings } from "@emdash-cms/theme-tokens";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
-import { ZIAS_MEDIA } from "../lib/zias-media";
 import "../styles/storefront.css";
 
 interface Props {
@@ -30,6 +29,8 @@ const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}
 const pageDescription = description ?? siteTagline;
 const menu = await getMenu("primary");
 const footerMenu = await getMenu("footer");
+const primaryItems = menu?.items ?? [];
+const footerItems = footerMenu?.items ?? [];
 const pageCtx = createPublicPageContext({
   Astro,
   kind: content ? "content" : "custom",
@@ -42,10 +43,9 @@ const pageCtx = createPublicPageContext({
   content,
   siteName: siteTitle,
 });
-const logoSrc = siteLogo?.url ?? ZIAS_MEDIA.logo.src;
+const logoSrc = siteLogo?.url ?? "/media/demo/mark.svg";
 const logoAlt = siteLogo?.alt || siteTitle;
 ---
-
 
 <!doctype html>
 <html lang="en">
@@ -67,31 +67,34 @@ const logoAlt = siteLogo?.alt || siteTitle;
     data-theme-footer={themeSettings.variants.footer}
     data-theme-motion={themeSettings.motion.enabled ? themeSettings.motion.intensity : "none"}
   >
-    <!-- impeccable:direction
-    THESIS: A Sarawak pantry label turns a commerce template into a clear ZIAS food counter.
-    OWN-WORLD: Warm paper, cocoa ink, ZIAS red, turmeric yellow, palm green, thin rules, and generous editorial crops.
-    FIRST-VIEWPORT: Brand, source-backed promise, hero food image, and one direct route into the editable demo catalog.
-    STATES: CMS fallback explains unpublished content; catalog loading, empty, error, and checkout recovery name the next action.
-    RESPONSIVE: The editorial split becomes a stacked reading flow; the product rail becomes a two-column grid; controls stay keyboard-first.
-    REFUSES: Generic railway dashboards, gradients, fake proof, pill-only controls, and hardcoded product records.
-    -->
     <EmDashBodyStart page={pageCtx} />
-    <div class="demo-strip">
-      <p><strong>Client preview</strong> — Products, prices, and inventory are demo values editable in Commerce admin.</p>
-      <a href="/shop">Open catalog <span aria-hidden="true">→</span></a>
+    <div class="utility-bar">
+      <div class="utility-bar__inner">
+        <p>{siteTagline}</p>
+        <a class="utility-bar__link" href="/shop">Explore the collection <span aria-hidden="true">→</span></a>
+      </div>
     </div>
     <header class="site-header">
-      <nav class="site-nav" aria-label="Primary navigation">
+      <div class="site-nav">
         <a class="brand" href="/" aria-label={`${siteTitle} home`}>
-          <img class="brand-mark" src={logoSrc} alt={logoAlt} />
+          <img class="brand-mark" src={logoSrc} alt={logoAlt} width="42" height="42" />
           <span class="brand-name">{siteTitle}</span>
         </a>
-        <div class="nav-links">
-          {menu?.items.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+        <nav class="site-menu site-menu--desktop" aria-label="Primary navigation">
+          {primaryItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+        </nav>
+        <div class="site-nav__tools">
+          <LiveSearch placeholder="Search products and pages" collections={["pages", "story_blocks"]} />
+          <a class="nav-account" href="/orders/">Account</a>
           <a class="cart-link" href="/cart">Cart <span data-cart-count aria-live="polite">0</span></a>
+          <details class="mobile-menu">
+            <summary aria-label="Open navigation menu">Menu</summary>
+            <nav aria-label="Mobile navigation">
+              {primaryItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+            </nav>
+          </details>
         </div>
-        <LiveSearch placeholder="Search the pantry" collections={["pages", "story_blocks"]} />
-      </nav>
+      </div>
     </header>
     <main>
       <slot />
@@ -99,14 +102,14 @@ const logoAlt = siteLogo?.alt || siteTitle;
     <footer class="site-footer">
       <div class="footer-brand">
         <a class="brand brand--footer" href="/" aria-label={`${siteTitle} home`}>
-          <img class="brand-mark" src={logoSrc} alt={logoAlt} />
+          <img class="brand-mark" src={logoSrc} alt={logoAlt} width="42" height="42" />
           <span class="brand-name">{siteTitle}</span>
         </a>
         <p>{siteTagline}</p>
-        <p class="footer-note">A preview storefront for client review. Replace demo catalog values before launch.</p>
+        <p class="footer-note">A reusable Commerce storefront starter. Replace the demo catalog and copy before launch.</p>
       </div>
       <nav class="footer-links" aria-label="Footer navigation">
-        {footerMenu?.items.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+        {footerItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
       </nav>
     </footer>
     <EmDashBodyEnd page={pageCtx} />

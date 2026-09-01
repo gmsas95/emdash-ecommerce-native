@@ -4,7 +4,7 @@ import ClientProductDetail from "../../components/ClientProductDetail.astro";
 import DemoNotice from "../../components/DemoNotice.astro";
 const slug = Astro.params.slug ?? "";
 ---
-<Base title="Product" description="ZIAS product preview detail.">
+<Base title="Product" description="View product details and available options.">
   <div class="page-wrap section product-page">
     <DemoNotice compact />
     <ClientProductDetail slug={slug} />

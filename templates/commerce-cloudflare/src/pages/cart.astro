@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import DemoNotice from "../components/DemoNotice.astro";
 ---
-<Base title="Cart" description="Review your ZIAS preview selection.">
+<Base title="Cart" description="Review the items in your cart.">
   <div class="page-wrap section cart-page">
     <h1>Cart</h1>
     <DemoNotice compact />
@@ -32,7 +32,7 @@ import DemoNotice from "../components/DemoNotice.astro";
           if (!cart.lines.length) {
             const empty = document.createElement("div");
             empty.className = "empty-state";
-            empty.textContent = "Your cart is empty. Browse the preview catalog to choose a product.";
+            empty.textContent = "Your cart is empty. Browse the collection to choose a product.";
             const link = document.createElement("a");
             link.className = "button";
             link.href = "/shop";

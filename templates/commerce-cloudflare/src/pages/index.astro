@@ -4,10 +4,9 @@ import { Image, PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import ComposerSections from "../components/ComposerSections.astro";
 import ClientCatalog from "../components/ClientCatalog.astro";
-import ZiasStoryBlocks from "../components/ZiasStoryBlocks.astro";
+import StoryBlocks from "../components/StoryBlocks.astro";
 import DemoNotice from "../components/DemoNotice.astro";
 import { loadCmsPage, loadPageLayout } from "../lib/cms";
-import { ZIAS_MEDIA } from "../lib/zias-media";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 
 const { page: homePage, cacheHint } = await loadCmsPage("home");
@@ -16,49 +15,120 @@ const { siteTitle, siteTagline } = resolveStarterSiteIdentity(await getSiteSetti
 const title = homePage?.data.title ?? siteTitle;
 const heroImage = homePage?.data.featured_image;
 const heroImageSource = heroImage && ("url" in heroImage ? heroImage.url : "src" in heroImage ? heroImage.src : undefined);
-const useLocalHeroFallback = import.meta.env.DEV || import.meta.env.PUBLIC_ZIAS_DEMO_MEDIA_FALLBACK === "true";
 const homeLayout = await loadPageLayout("home", Astro.url, Astro.locals.emdash?.handlePublicPluginApiRoute);
 ---
 <Base title={title} description={siteTagline} content={homePage ? { collection: "pages", id: homePage.data.id ?? homePage.id, slug: homePage.id } : undefined}>
-  {homeLayout ? (
-    <ComposerSections layout={homeLayout} />
-  ) : (
-    <section class="home-hero" aria-labelledby="home-title">
-      {homePage ? (
-        <>
-          <div class="home-hero__copy" data-cms-collection="pages" data-cms-id={homePage.id}>
-            <h1 id="home-title" {...(homePage.edit?.title ?? {})}>{homePage.data.title ?? siteTitle}</h1>
-            <div class="rich-text" {...(homePage.edit?.content ?? {})}>
-              {homePage.data.content ? <PortableText value={homePage.data.content as never} /> : <p>{siteTagline}</p>}
-            </div>
-            <a class="button button--arrow" href="/shop">Browse the preview catalog <span aria-hidden="true">→</span></a>
-          </div>
-          {heroImage && (
-            <div class="home-hero__media" {...(homePage.edit?.featured_image ?? {})}>
-              {heroImageSource ? <Image image={heroImage as never} /> : useLocalHeroFallback ? <img src={ZIAS_MEDIA.heroFood.src} alt={ZIAS_MEDIA.heroFood.alt} /> : null}
-            </div>
-          )}
-        </>
-      ) : (
-        <div class="page-wrap section">
-          <h1 id="home-title">Homepage content is not published.</h1>
-          <p>Publish the <code>home</code> page from EmDash Admin to control this storefront.</p>
-          <a class="button" href="/_emdash/admin/content/pages/new">Create homepage content</a>
-        </div>
-      )}
-    </section>
-  )}
-  <section class="section section--catalog" aria-labelledby="featured-heading">
+  <section class="home-hero" aria-labelledby="home-title">
+    <div class="home-hero__copy">
+      <p class="home-hero__eyebrow">A considered collection</p>
+      <h1 id="home-title" {...(homePage?.edit?.title ?? {})}>{homePage?.data.title ?? "Thoughtful goods for everyday rituals."}</h1>
+      <div class="rich-text" {...(homePage?.edit?.content ?? {})}>
+        {homePage?.data.content ? <PortableText value={homePage.data.content as never} /> : <p>{siteTagline}</p>}
+      </div>
+      <a class="button" href="/shop">Browse the collection <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="home-hero__media" {...(homePage?.edit?.featured_image ?? {})}>
+      {heroImageSource ? <Image image={heroImage as never} /> : <img src="/media/demo/hero.svg" alt="A calm arrangement of selected goods" width="1200" height="900" />}
+    </div>
+  </section>
+
+  {homeLayout && <ComposerSections layout={homeLayout} />}
+
+  <section class="section" aria-labelledby="category-heading">
     <div class="section-heading">
       <div>
-        <h2 id="featured-heading">Good things, ready for the kitchen.</h2>
+        <p class="section-eyebrow">Start with a category</p>
+        <h2 id="category-heading">Find your next everyday favourite.</h2>
+      </div>
+    </div>
+    <div class="category-shortcuts">
+      <a class="category-shortcut" href="/shop#shop-products">
+        <strong>New arrivals</strong>
+        <span>Fresh additions to explore</span>
+      </a>
+      <a class="category-shortcut" href="/shop#shop-products">
+        <strong>Everyday essentials</strong>
+        <span>Reliable staples for the week</span>
+      </a>
+      <a class="category-shortcut" href="/shop#shop-products">
+        <strong>Giftable goods</strong>
+        <span>Thoughtful picks to share</span>
+      </a>
+      <a class="category-shortcut" href="/shop#shop-products">
+        <strong>Browse everything</strong>
+        <span>See the full collection</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="catalog" class="section section--catalog" aria-labelledby="featured-heading">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">Featured products</p>
+        <h2 id="featured-heading">Good things, ready when you are.</h2>
       </div>
       <a class="text-link" href="/shop">View all <span aria-hidden="true">→</span></a>
     </div>
     <DemoNotice compact />
     <ClientCatalog id="featured-products" limit={4} />
   </section>
-  <section class="section section--story" aria-label="About ZIAS Company">
-    <ZiasStoryBlocks />
+
+  <section class="section" aria-labelledby="promo-heading">
+    <div class="promo-split">
+      <div>
+        <p class="section-eyebrow">Make room for something good</p>
+        <h2 id="promo-heading">A simpler way to choose well.</h2>
+        <p>Explore a focused range of useful, considered products with clear details and a straightforward checkout.</p>
+        <a class="button" href="/shop">Shop all products <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="promo-split__media">
+        <img src="/media/demo/promo.svg" alt="A curated collection arranged on a table" width="1000" height="750" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="trust-heading">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">Shopping with confidence</p>
+        <h2 id="trust-heading">The details are easy to find.</h2>
+      </div>
+    </div>
+    <div class="trust-grid">
+      <article class="trust-card">
+        <h3>Clear product information</h3>
+        <p>Browse images, descriptions, options, and prices managed in Commerce.</p>
+      </article>
+      <article class="trust-card">
+        <h3>Simple cart management</h3>
+        <p>Adjust quantities, remove items, and review the current total before checkout.</p>
+      </article>
+      <article class="trust-card">
+        <h3>Secure hosted payment</h3>
+        <p>Continue to the payment provider selected by the store when your order is ready.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section section--editorial" aria-labelledby="editorial-heading">
+    <div class="editorial-section">
+      <div class="editorial-section__heading">
+        <p class="section-eyebrow">A little more context</p>
+        <h2 id="editorial-heading">Made to fit your everyday.</h2>
+      </div>
+      <div class="rich-text">
+        {homePage?.data.content ? <PortableText value={homePage.data.content as never} /> : <p>{siteTagline}</p>}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--story" aria-labelledby="story-heading">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">From the journal</p>
+        <h2 id="story-heading">Ideas, details, and inspiration.</h2>
+      </div>
+    </div>
+    <StoryBlocks />
   </section>
 </Base>

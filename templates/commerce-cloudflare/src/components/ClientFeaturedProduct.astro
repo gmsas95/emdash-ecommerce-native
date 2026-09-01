@@ -38,9 +38,10 @@ const { productId } = Astro.props;
     link.href = `/shop/${encodeURIComponent(data.slug)}`;
     const productImage = document.createElement("img");
     productImage.src = imageUrl(data.images?.[0]?.url);
-    productImage.alt = data.images?.[0]?.alt || data.name || "Featured product";
+    productImage.alt = data.images?.[0]?.alt || data.name || "Product image";
     productImage.width = 800;
     productImage.height = 800;
+    productImage.loading = "lazy";
     const details = document.createElement("span");
     details.className = "featured-product-card__details";
     const title = document.createElement("strong");
@@ -51,7 +52,9 @@ const { productId } = Astro.props;
     amount.textContent = typeof minor === "number" && Number.isSafeInteger(minor) && minor >= 0
       ? formatMinorAmount(minor, variant?.currency || data.currency)
       : "Price set in Commerce admin";
-    details.append(title, amount);
+    const cta = document.createElement("span");
+    cta.textContent = "View product →";
+    details.append(title, amount, cta);
     link.append(productImage, details);
     root.replaceChildren(link);
   }

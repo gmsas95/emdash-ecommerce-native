@@ -5,10 +5,15 @@ const { product } = Astro.props;
 const image = product.images[0];
 const price = product.hasVariants ? product.variants[0]?.priceMinor ?? 0 : product.priceMinor ?? 0;
 ---
-<a class="product-card" href={`/shop/${product.slug}`}>
-  <img src={imageUrl(image?.url)} alt={image?.alt || product.name} loading="lazy" />
+<a class="product-card" href={`/shop/${encodeURIComponent(product.slug)}`}>
+  <div class="product-card__media">
+    <img src={imageUrl(image?.url)} alt={image?.alt || product.name || "Product image"} loading="lazy" width="800" height="800" />
+    <span class="product-card__badge">{product.hasVariants ? "Options" : "Featured"}</span>
+  </div>
   <div class="product-card-body">
     <h3>{product.name}</h3>
+    <small>{product.hasVariants ? "Choose from available options" : "Details managed in Commerce"}</small>
     <p>{formatMinorAmount(price, product.currency)}</p>
+    <span class="product-card__cta">View product →</span>
   </div>
 </a>

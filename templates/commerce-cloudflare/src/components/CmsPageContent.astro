@@ -3,7 +3,6 @@ import { Image, PortableText } from "emdash/ui";
 import type { CmsPageEntry } from "../lib/cms";
 import { loadPageLayout } from "../lib/cms";
 import ComposerSections from "./ComposerSections.astro";
-import { ZIAS_MEDIA } from "../lib/zias-media";
 
 interface Props {
   page: CmsPageEntry;
@@ -12,15 +11,13 @@ interface Props {
 const { page } = Astro.props;
 const image = page.data.featured_image;
 const imageSource = image && ("url" in image ? image.url : "src" in image ? image.src : undefined);
-const fallback = page.id === "about" ? ZIAS_MEDIA.philosophy : page.id === "contact" ? ZIAS_MEDIA.contact : undefined;
-const useLocalFallback = (import.meta.env.DEV || import.meta.env.PUBLIC_ZIAS_DEMO_MEDIA_FALLBACK === "true") && !imageSource && fallback;
 const layout = await loadPageLayout(page.id, Astro.url, Astro.locals.emdash?.handlePublicPluginApiRoute);
 ---
 <article class="cms-page" data-cms-collection="pages" data-cms-slug={page.id}>
   <h1 {...(page.edit?.title ?? {})}>{page.data.title ?? page.id}</h1>
-  {image && (
+  {imageSource && (
     <div class="cms-page-media" {...(page.edit?.featured_image ?? {})}>
-      {imageSource ? <Image image={image as never} /> : useLocalFallback ? <img src={fallback.src} alt={fallback.alt} /> : null}
+      <Image image={image as never} />
     </div>
   )}
   {layout ? <ComposerSections layout={layout} /> : (

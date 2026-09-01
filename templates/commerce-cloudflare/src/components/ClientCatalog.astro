@@ -3,7 +3,7 @@ interface Props { id: string; limit?: number; }
 const { id, limit = 50 } = Astro.props;
 ---
 <div id={id} data-catalog-grid data-limit={limit} class="product-grid" aria-live="polite">
-  <p class="notice catalog-status">Loading the preview collection...</p>
+  <p class="notice catalog-status">Loading products...</p>
 </div>
 <script>
   import { commerceClient, formatMinorAmount, imageUrl } from "../lib/commerce";
@@ -30,34 +30,43 @@ const { id, limit = 50 } = Astro.props;
   const render = (root: HTMLElement, items: CatalogItem[]) => {
     root.replaceChildren();
     if (!items.length) {
-      showMessage(root, "No published products are available. Publish a product in Commerce admin to populate this catalog.");
+      showMessage(root, "No published products are available yet. Publish a product in Commerce admin to populate this catalog.");
       return;
     }
-    for (const product of items.slice(0, Number(root.getAttribute("data-limit") || 50))) {
-      const data = product.data;
+    for (const item of items.slice(0, Number(root.getAttribute("data-limit") || 50))) {
+      const data = item.data;
       const link = document.createElement("a");
       link.className = "product-card";
       link.href = `/shop/${encodeURIComponent(data.slug)}`;
+      const media = document.createElement("div");
+      media.className = "product-card__media";
       const productImage = document.createElement("img");
       productImage.src = imageUrl(data.images?.[0]?.url);
-      productImage.alt = data.images?.[0]?.alt || data.name || "ZIAS product";
+      productImage.alt = data.images?.[0]?.alt || data.name || "Product image";
       productImage.loading = "lazy";
       productImage.width = 800;
       productImage.height = 800;
+      const badge = document.createElement("span");
+      badge.className = "product-card__badge";
+      badge.textContent = data.hasVariants ? "Options" : "Featured";
+      media.append(productImage, badge);
       const body = document.createElement("div");
       body.className = "product-card-body";
       const title = document.createElement("h3");
       title.textContent = data.name || "Untitled product";
       const detail = document.createElement("small");
-      detail.textContent = "Preview item · editable in Commerce admin";
+      detail.textContent = data.hasVariants ? "Choose from available options" : "Details managed in Commerce";
       const firstVariant = data.hasVariants ? data.variants?.[0] : undefined;
       const amount = document.createElement("p");
       const minor = firstVariant?.priceMinor ?? data.priceMinor;
       amount.textContent = typeof minor === "number" && Number.isSafeInteger(minor) && minor >= 0
         ? formatMinorAmount(minor, firstVariant?.currency || data.currency)
         : "Price set in Commerce admin";
-      body.append(title, detail, amount);
-      link.append(productImage, body);
+      const cta = document.createElement("span");
+      cta.className = "product-card__cta";
+      cta.textContent = "View product →";
+      body.append(title, detail, amount, cta);
+      link.append(media, body);
       root.append(link);
     }
   };
@@ -66,7 +75,7 @@ const { id, limit = 50 } = Astro.props;
     root.replaceChildren();
     const loading = document.createElement("p");
     loading.className = "notice catalog-status";
-    loading.textContent = "Loading the preview collection...";
+    loading.textContent = "Loading products...";
     root.append(loading);
     try {
       catalogPromise ??= commerceClient.catalog.list();
@@ -74,7 +83,7 @@ const { id, limit = 50 } = Astro.props;
       render(root, result.items);
     } catch {
       catalogPromise = undefined;
-      showMessage(root, "We couldn't load the collection. Retry to request the current Commerce catalog.", true);
+      showMessage(root, "We couldn't load the product catalog. Retry to request the current Commerce catalog.", true);
     }
   }
 

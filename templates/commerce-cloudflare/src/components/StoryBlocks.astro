@@ -2,28 +2,6 @@
 import { Image, PortableText } from "emdash/ui";
 import { loadCmsCollection } from "../lib/cms";
 import type { CmsCollectionEntry, CmsMediaField } from "../lib/cms";
-import { ZIAS_MEDIA } from "../lib/zias-media";
-
-interface StoryBlockData {
-  kicker?: string;
-  title?: string;
-  image?: CmsMediaField | null;
-  content?: unknown[];
-  sort_order?: number;
-}
-
-interface StoryBlockEntry extends CmsCollectionEntry {
-  data: StoryBlockData;
-  edit?: Record<string, Record<string, unknown>>;
-}
-
-const STORY_FALLBACKS: Record<string, { src: string; alt: string }> = {
-  philosophy: ZIAS_MEDIA.philosophy,
-  stockists: ZIAS_MEDIA.stockist,
-  events: ZIAS_MEDIA.events,
-  certifications: ZIAS_MEDIA.certifications,
-  contact: ZIAS_MEDIA.contact,
-};
 
 interface StoryBlockData {
   kicker?: string;
@@ -46,35 +24,33 @@ if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 const entries = [...rawEntries].sort((left, right) => (left.data.sort_order ?? 0) - (right.data.sort_order ?? 0));
 ---
 {entries.length > 0 && (
-  <div class="story-blocks" aria-label="ZIAS story">
+  <div class="story-blocks" aria-label="Editorial stories">
     {entries.map((entry, index) => {
       const image = entry.data.image;
       const imageSource = image && ("url" in image ? image.url : "src" in image ? image.src : undefined);
-      const fallback = STORY_FALLBACKS[entry.id];
-      const useLocalFallback = (import.meta.env.DEV || import.meta.env.PUBLIC_ZIAS_DEMO_MEDIA_FALLBACK === "true") && !imageSource && fallback;
+      const title = entry.data.title ?? entry.id;
+      const titleId = `story-${entry.id}-title`;
       return (
-        <section
+        <article
           id={entry.id}
           class:list={["story-block", index % 2 === 1 && "story-block--reverse"]}
           data-cms-collection="story_blocks"
           data-cms-id={entry.id}
+          aria-labelledby={titleId}
         >
           <div class="story-block__copy">
-            <h2 {...(entry.edit?.title ?? {})}>{entry.data.title ?? entry.id}</h2>
+            {entry.data.kicker && <p class="section-eyebrow">{entry.data.kicker}</p>}
+            <h3 id={titleId} {...(entry.edit?.title ?? {})}>{title}</h3>
             <div class="rich-text" {...(entry.edit?.content ?? {})}>
-              {entry.data.content ? <PortableText value={entry.data.content as never} /> : <p>Content coming soon.</p>}
+              {entry.data.content ? <PortableText value={entry.data.content as never} /> : <p>Editorial content will appear here.</p>}
             </div>
           </div>
-          {image && (
+          {imageSource && (
             <div class="story-block__media" {...(entry.edit?.image ?? {})}>
-              {imageSource ? (
-                <Image image={image as never} />
-              ) : useLocalFallback ? (
-                <img src={fallback.src} alt={fallback.alt} loading="lazy" />
-              ) : null}
+              <Image image={image as never} />
             </div>
           )}
-        </section>
+        </article>
       );
     })}
   </div>
