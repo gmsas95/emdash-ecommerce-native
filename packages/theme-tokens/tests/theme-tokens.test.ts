@@ -25,6 +25,31 @@ describe("theme token defaults and resolution", () => {
     expect(resolved.tokens.color.brand).toBe("#123456");
     expect(resolved.tokens.layout.contentWidth).toBe(DEFAULT_THEME_SETTINGS.tokens.layout.contentWidth);
   });
+  it("falls back safely for unknown persisted versions", () => {
+    const resolved = resolveThemeSettings({ version: 2, tokens: { "color.brand": "#123456" } });
+    expect(resolved.version).toBe(1);
+    expect(resolved.tokens.color.brand).toBe(DEFAULT_THEME_SETTINGS.tokens.color.brand);
+  });
+
+  it("reports normalized values in change summaries", () => {
+    const result = applyThemePatch(resolveThemeSettings(undefined), {
+      "typography.google.weights": [700, 400, 700],
+      "typography.google.subsets": ["latin-ext", "latin"],
+    });
+    expect(result.changes[0]?.next).toEqual([400, 700]);
+    expect(result.changes[1]?.next).toEqual(["latin", "latin-ext"]);
+  });
+
+  it("does not expose mutable defaults or registry metadata", () => {
+    const defaults = resolveThemeSettings(undefined);
+    defaults.tokens.color.brand = "#000000";
+    const fonts = listThemeFonts();
+    const first = fonts[0];
+    if (!first) throw new Error("Expected a pinned font");
+    first.weights[0] = 999;
+    expect(resolveThemeSettings(undefined).tokens.color.brand).toBe(DEFAULT_THEME_SETTINGS.tokens.color.brand);
+    expect(listThemeFonts()[0]?.weights[0]).not.toBe(999);
+  });
 
   it("rejects unknown fonts and unsafe token values", () => {
     expect(() => applyThemePatch(resolveThemeSettings(undefined), {
@@ -132,6 +157,9 @@ describe("theme token boundaries", () => {
       { "variants.header": "arbitrary" },
       { "color.brand": "red" },
       { "color.brand": "url(javascript:alert(1))" },
+      { "color.brand": "#12345" },
+      { "color.brand": "rgb(300, 0, 0)" },
+      { "color.brand": "hsl(10, 50%, 120%)" },
       { "layout.contentWidth": "20px" },
       { "layout.contentWidth": "99999px" },
       { "elevation.card": "0 0 0 red" },
@@ -159,5 +187,25 @@ describe("theme CSS emission", () => {
     expect(css).toContain("--theme-font-display:");
     expect(css).toContain("serif");
     expect(css).not.toContain("<script>");
+  });
+
+  it("emits valid self-hosted declarations for every configured weight", () => {
+    const css = emitThemeCss(resolveThemeSettings(undefined));
+    expect(css.match(/@font-face/g)).toHaveLength(5);
+    expect(css).toContain("font-weight: 400;");
+    expect(css).toContain("font-weight: 800;");
+    expect(css).not.toContain("font-weight: 400 500");
+
+  });
+  it("loads every selected role font in self-hosted output", () => {
+    const settings = resolveThemeSettings({
+      typography: {
+        display: { font: "plus-jakarta", weight: 800 },
+        heading: { font: "dm-sans", weight: 700 },
+      },
+    });
+    const css = emitThemeCss(settings);
+    expect(css).toContain("/fonts/plus-jakarta-400.woff2");
+    expect(css).toContain("/fonts/dm-sans-700.woff2");
   });
 });

@@ -9,7 +9,6 @@ import {
 } from "./schema.js";
 
 const tokenSections = new Set(["color", "layout", "shape", "elevation"]);
-const topLevelSections = new Set(["typography", "motion", "variants"]);
 const knownPaths = new Set([
   "typography.display.provider", "typography.display.font", "typography.display.weight", "typography.display.style",
   "typography.heading.provider", "typography.heading.font", "typography.heading.weight", "typography.heading.style",
@@ -70,6 +69,7 @@ function patchPath(path: string): string {
 function flattenPersisted(value: Record<string, unknown>): Record<string, unknown> {
   const flattened: Record<string, unknown> = {};
   const source = isRecord(value.theme) ? value.theme : value;
+  if (source.version !== undefined && source.version !== 1) throw new Error(`Unsupported theme settings version: ${String(source.version)}`);
   const tokens = isRecord(source.tokens) ? source.tokens : {};
   for (const [key, tokenValue] of Object.entries(tokens)) {
     if (key.includes(".")) flattened[key] = tokenValue;
@@ -122,8 +122,8 @@ function validateSettings(settings: unknown): ResolvedThemeSettings {
 
 export function resolveThemeSettings(raw: unknown): ResolvedThemeSettings {
   if (!isRecord(raw)) return cloneSettings(DEFAULT_THEME_SETTINGS);
-  const patch = flattenPersisted(raw);
   try {
+    const patch = flattenPersisted(raw);
     return applyThemePatch(cloneSettings(DEFAULT_THEME_SETTINGS), patch).settings;
   } catch {
     return cloneSettings(DEFAULT_THEME_SETTINGS);
@@ -146,7 +146,17 @@ export function applyThemePatch(current: ResolvedThemeSettings, patch: unknown):
     setNested(candidate as unknown as Record<string, unknown>, targetPath, value);
     changes.push({ path: rawPath, previous, next: value });
   }
-  return { settings: validateSettings(candidate), changes };
+  const resolved = validateSettings(candidate);
+  return {
+    settings: resolved,
+    changes: changes.map((change) => {
+      const canonicalPath = change.path.replace(/^tokens\./, "");
+      const targetPath = canonicalPath.startsWith("color.") || canonicalPath.startsWith("layout.") || canonicalPath.startsWith("shape.") || canonicalPath.startsWith("elevation.")
+        ? `tokens.${canonicalPath}`
+        : canonicalPath;
+      return { ...change, next: getNested(resolved as unknown as Record<string, unknown>, targetPath) };
+    }),
+  };
 }
 
 export { FONT_REGISTRY };

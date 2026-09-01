@@ -1,6 +1,12 @@
+function deepFreeze<T>(value: T): T {
+  if (typeof value !== "object" || value === null || Object.isFrozen(value)) return value;
+  Object.freeze(value);
+  for (const child of Object.values(value)) deepFreeze(child);
+  return value;
+}
 import type { ResolvedThemeSettings } from "./schema.js";
 
-export const DEFAULT_THEME_SETTINGS: ResolvedThemeSettings = {
+const defaultThemeSettings: ResolvedThemeSettings = {
   version: 1,
   tokens: {
     color: {
@@ -64,4 +70,5 @@ export const DEFAULT_THEME_SETTINGS: ResolvedThemeSettings = {
   },
 };
 
+export const DEFAULT_THEME_SETTINGS = deepFreeze(defaultThemeSettings);
 export const DEFAULT_THEME = DEFAULT_THEME_SETTINGS;

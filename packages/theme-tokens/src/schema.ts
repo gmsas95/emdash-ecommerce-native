@@ -8,9 +8,34 @@ export const TYPOGRAPHY_PROVIDERS = ["registry"] as const;
 export const GOOGLE_DELIVERY_MODES = ["preview", "self-hosted"] as const;
 export const FONT_SUBSETS = ["latin", "latin-ext"] as const;
 
-const cssColorPattern = /^(?:#[\da-fA-F]{3,8}|(?:rgb|rgba|hsl|hsla)\(\s*[\d.%\s,+-]+\))$/;
+function isCssColor(value: string): boolean {
+  if (/^#(?:[\da-fA-F]{3}|[\da-fA-F]{4}|[\da-fA-F]{6}|[\da-fA-F]{8})$/.test(value)) return true;
+  const match = /^(rgb|rgba|hsl|hsla)\(\s*(.*?)\s*\)$/.exec(value);
+  if (!match) return false;
+  const body = match[2] ?? "";
+  const kind = match[1] ?? "";
+  const channels = body.split(",").map((channel) => channel.trim());
+  const first = channels[0] ?? "";
+  const second = channels[1] ?? "";
+  const third = channels[2] ?? "";
+  const fourth = channels[3];
+  const isNumber = (channel: string, min: number, max: number) => {
+    const amount = Number(channel);
+    return channel.length > 0 && Number.isFinite(amount) && amount >= min && amount <= max;
+  };
+  if (kind.startsWith("rgb")) {
+    if (channels.length !== (kind === "rgba" ? 4 : 3)) return false;
+    const validChannels = channels.slice(0, 3).every((channel) => channel.endsWith("%") ? isNumber(channel.slice(0, -1), 0, 100) : isNumber(channel, 0, 255));
+    return validChannels && (!fourth || fourth.endsWith("%") ? isNumber((fourth ?? "").slice(0, -1), 0, 100) : isNumber(fourth, 0, 1));
+  }
+  if (channels.length !== (kind === "hsla" ? 4 : 3)) return false;
+  const hue = first.replace(/deg$/, "");
+  return isNumber(hue, 0, 360) && /^\d+(?:\.\d+)?%$/.test(second) && /^\d+(?:\.\d+)?%$/.test(third)
+    && isNumber(second.slice(0, -1), 0, 100) && isNumber(third.slice(0, -1), 0, 100)
+    && (!fourth || fourth.endsWith("%") ? isNumber((fourth ?? "").slice(0, -1), 0, 100) : isNumber(fourth, 0, 1));
+}
 const cssLengthPattern = /^\d+(?:\.\d+)?(?:px|rem|em)$/;
-export const cssColorSchema = z.string().regex(cssColorPattern, "Expected a hex, rgb(), or hsl() color");
+export const cssColorSchema = z.string().refine(isCssColor, "Expected a valid hex, rgb(), or hsl() color");
 export const cssLengthSchema = (min: number, max: number) => z.string().refine((value) => {
   const match = cssLengthPattern.exec(value);
   if (!match) return false;

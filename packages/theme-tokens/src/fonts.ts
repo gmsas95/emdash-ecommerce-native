@@ -1,9 +1,15 @@
+function deepFreeze<T>(value: T): T {
+  if (typeof value !== "object" || value === null || Object.isFrozen(value)) return value;
+  Object.freeze(value);
+  for (const child of Object.values(value)) deepFreeze(child);
+  return value;
+}
 import type { FontId, ThemeFontRecord } from "./schema.js";
 
 const systemSansFallback = "Arial, Helvetica, sans-serif";
 const systemSerifFallback = "Georgia, Times New Roman, serif";
 
-export const FONT_REGISTRY: readonly ThemeFontRecord[] = [
+const fontRegistry: readonly ThemeFontRecord[] = [
   {
     id: "system-sans", name: "System Sans", displayName: "System Sans", provider: "system", weights: [400, 500, 600, 700],
     italic: true, supportsItalic: true, variable: false, supportsVariable: false, subsets: ["latin"], license: "System font license",
@@ -41,6 +47,7 @@ export const FONT_REGISTRY: readonly ThemeFontRecord[] = [
   },
 ];
 
+export const FONT_REGISTRY = deepFreeze(fontRegistry);
 const fontById = new Map<FontId, ThemeFontRecord>(FONT_REGISTRY.map((font) => [font.id, font]));
 
 export function getThemeFont(fontId: FontId): ThemeFontRecord {
@@ -51,8 +58,13 @@ export function getThemeFont(fontId: FontId): ThemeFontRecord {
 
 export function listThemeFonts(query?: string): ThemeFontRecord[] {
   const normalizedQuery = query?.trim().toLocaleLowerCase();
-  if (!normalizedQuery) return FONT_REGISTRY.map((font) => ({ ...font }));
-  return FONT_REGISTRY
-    .filter((font) => [font.id, font.name, font.displayName, font.googleFamily, font.provider].some((value) => value?.toLocaleLowerCase().includes(normalizedQuery)))
-    .map((font) => ({ ...font }));
+  const matches = normalizedQuery
+    ? FONT_REGISTRY.filter((font) => [font.id, font.name, font.displayName, font.googleFamily, font.provider].some((value) => value?.toLocaleLowerCase().includes(normalizedQuery)))
+    : FONT_REGISTRY;
+  return matches.map((font) => ({
+    ...font,
+    weights: [...font.weights],
+    subsets: [...font.subsets],
+    deliveryModes: [...font.deliveryModes],
+  }));
 }
