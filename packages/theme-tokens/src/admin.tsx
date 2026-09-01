@@ -4,10 +4,8 @@ import * as React from "react";
 import { DEFAULT_THEME_SETTINGS } from "./defaults.js";
 import { FONT_REGISTRY } from "./fonts.js";
 import { applyThemePatch } from "./resolve.js";
-import { themeExecuteInputSchema, themeOperationRegistry, type ThemeExecuteOutput } from "./operation-registry.js";
-import { FONT_SUBSETS } from "./schema.js";
-import type { ResolvedThemeSettings } from "./schema.js";
-
+import { compatibleGoogleFontWeights, themeExecuteInputSchema, themeOperationRegistry, type ThemeExecuteOutput } from "./operation-registry.js";
+import { FONT_SUBSETS, type FontId, type ResolvedThemeSettings } from "./schema.js";
 const API = "/_emdash/api/plugins/emdash-theme-tokens";
 type EditablePath = string;
 type Primitive = string | number | boolean | readonly (string | number)[];
@@ -68,7 +66,28 @@ function ThemeSettingsPage() {
     catch (cause) { setError(cause instanceof Error ? cause.message : "Invalid theme setting."); }
   }
   function edit(path: string, value: string): void { setDraft((current) => ({ ...current, [path]: value })); setMessage(null); }
-  function select(path: string, value: Primitive): void { setDraft((current) => ({ ...current, [path]: stringifyValue(value) })); try { const result = applyThemePatch(settings, { [path]: value }); setSettings(result.settings); setDraft((current) => { const next = { ...current }; delete next[path]; return next; }); setError(null); } catch (cause) { setError(cause instanceof Error ? cause.message : "Invalid theme setting."); } }
+  function select(path: string, value: Primitive): void {
+    setDraft((current) => ({ ...current, [path]: stringifyValue(value) }));
+    try {
+      const result = applyThemePatch(settings, { [path]: value });
+      setSettings(result.settings);
+      setDraft((current) => { const next = { ...current }; delete next[path]; return next; });
+      setError(null);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Invalid theme setting."); }
+  }
+  function selectGoogleFamily(nextFamily: string): void {
+    const currentWeights = readPath(settings, "typography.google.weights");
+    const weights = Array.isArray(currentWeights) ? currentWeights.filter((weight): weight is number => typeof weight === "number") : [];
+    try {
+      const result = applyThemePatch(settings, {
+        "typography.google.family": nextFamily,
+        "typography.google.weights": compatibleGoogleFontWeights(nextFamily as FontId, weights),
+      });
+      setSettings(result.settings);
+      setDraft((current) => { const next = { ...current }; delete next["typography.google.family"]; delete next["typography.google.weights"]; return next; });
+      setError(null);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Invalid Google font selection."); }
+  }
   function value(path: string): string { return draft[path] ?? stringifyValue(readPath(settings, path)); }
   function bool(path: string): boolean { return readPath(settings, path) === true; }
 
@@ -112,7 +131,7 @@ function ThemeSettingsPage() {
   if (!loaded) return <main><h1>Theme Settings</h1><p role="alert">{error ?? "Theme settings could not be loaded."}</p><button type="button" onClick={() => void load()}>Retry</button></main>;
   return <main style={{ display: "grid", gap: "1rem", maxWidth: "60rem" }}>
     <header><h1>Theme Settings</h1><p>Validated design tokens shared by the storefront and MCP tools.</p></header>
-    <Group title="Google Fonts delivery" disabled={disabled}><SelectField label="Family" value={googleFamily} options={googleFonts.map((font) => font.id)} onChange={(next) => select("typography.google.family", next)} disabled={disabled} />{text("typography.google.weights", `Weights (${googleRecord?.displayName ?? "font"}, comma separated)`)}<div><span>Subsets</span>{availableSubsets.map((subset) => <label key={subset} style={{ marginInlineStart: "0.75rem" }}><input type="checkbox" checked={subsets.includes(subset)} onChange={(event) => select("typography.google.subsets", event.target.checked ? [...new Set([...subsets, subset])] : subsets.filter((item) => item !== subset))} disabled={disabled} /> {subset}</label>)}</div><SelectField label="Delivery" value={typography("google.delivery")} options={["preview", "self-hosted"]} onChange={(next) => select("typography.google.delivery", next)} disabled={disabled} /></Group>
+    <Group title="Google Fonts delivery" disabled={disabled}><SelectField label="Family" value={googleFamily} options={googleFonts.map((font) => font.id)} onChange={selectGoogleFamily} disabled={disabled} />{text("typography.google.weights", `Weights (${googleRecord?.displayName ?? "font"}, comma separated)`)}<div><span>Subsets</span>{availableSubsets.map((subset) => <label key={subset} style={{ marginInlineStart: "0.75rem" }}><input type="checkbox" checked={subsets.includes(subset)} onChange={(event) => select("typography.google.subsets", event.target.checked ? [...new Set([...subsets, subset])] : subsets.filter((item) => item !== subset))} disabled={disabled} /> {subset}</label>)}</div><SelectField label="Delivery" value={typography("google.delivery")} options={["preview", "self-hosted"]} onChange={(next) => select("typography.google.delivery", next)} disabled={disabled} /></Group>
     <Group title="Color" disabled={disabled}>{(["brand", "brandHover", "accent", "text", "muted", "surface", "surfaceAlt", "border", "success", "danger"] as const).map((name) => text(`tokens.color.${name}`, name))}</Group>
     <Group title="Typography" disabled={disabled}>{roleNames.map((role) => <React.Fragment key={role}><SelectField label={`${role} font`} value={typography(`${role}.font`)} options={fontIds} onChange={(next) => select(`typography.${role}.font`, next)} disabled={disabled} /><TextField label={`${role} weight`} value={typography(`${role}.weight`)} onChange={(next) => edit(`typography.${role}.weight`, next)} onBlur={() => commit(`typography.${role}.weight`)} disabled={disabled} /><SelectField label={`${role} style`} value={typography(`${role}.style`)} options={["normal", "italic"]} onChange={(next) => select(`typography.${role}.style`, next)} disabled={disabled} /></React.Fragment>)}<SelectField label="Type scale" value={typography("scale")} options={["compact", "comfortable", "spacious"]} onChange={(next) => select("typography.scale", next)} disabled={disabled} />{text("typography.bodyLineHeight", "Body line height")}{text("typography.headingTracking", "Heading tracking")}</Group>
     <Group title="Layout" disabled={disabled}>{([ ["contentWidth", "Content width"], ["narrowWidth", "Narrow width"], ["sectionSpacing", "Section spacing"], ["gridGap", "Grid gap"], ["componentSpacing", "Component spacing"] ] as const).map(([name, label]) => text(`tokens.layout.${name}`, label))}</Group>

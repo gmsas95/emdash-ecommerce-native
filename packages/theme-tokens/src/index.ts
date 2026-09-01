@@ -55,3 +55,4 @@ export {
   type ThemeTokensPluginDescriptorOptions,
   type ThemeTokensPluginOptions,
 } from "./plugin.js";
+export { compatibleGoogleFontWeights } from "./operation-registry.js";

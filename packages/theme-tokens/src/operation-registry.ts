@@ -27,6 +27,12 @@ export type ThemeExecuteInput = z.infer<typeof themeExecuteInputSchema>;
 export type ThemeOperationArea = NonNullable<ThemeSearchInput["area"]>;
 const GOOGLE_FONT_IDS = FONT_REGISTRY.filter((font) => font.provider === "google").map((font) => font.id);
 const fontMetadata = listThemeFonts().map(({ id, displayName, provider, weights, subsets, deliveryModes }) => ({ id, displayName, provider, weights, subsets, deliveryModes }));
+export function compatibleGoogleFontWeights(fontId: (typeof FONT_IDS)[number], currentWeights: readonly number[]): number[] {
+  const record = FONT_REGISTRY.find((font) => font.id === fontId && font.provider === "google");
+  if (!record) return [];
+  const compatible = currentWeights.filter((weight) => record.weights.includes(weight));
+  return compatible.length > 0 ? compatible : [record.weights[0] ?? 400];
+}
 const updatePaths = {
   "color.brand": { type: "string", description: "CSS color" },
   "color.brandHover": { type: "string", description: "CSS color" },

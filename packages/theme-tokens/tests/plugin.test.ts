@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RouteContext } from "emdash";
 
-import { DEFAULT_THEME_SETTINGS, createPlugin } from "../src/index.js";
+import { DEFAULT_THEME_SETTINGS, compatibleGoogleFontWeights, createPlugin } from "../src/index.js";
 
 type TestResult = {
   operations: Array<{ id: string }>;
@@ -90,6 +90,10 @@ describe("theme token native plugin contract", () => {
       operation: "theme.settings.update",
       input: { patch: { "color.brand": "not-a-color" } },
     })).rejects.toThrow(/Invalid theme settings patch:/i);
+  });
+  it("keeps Google family changes usable with compatible weights", () => {
+    expect(compatibleGoogleFontWeights("inter", [800, 900])).toEqual([400]);
+    expect(compatibleGoogleFontWeights("dm-sans", [400, 700])).toEqual([400, 700]);
   });
 
   it("marks execute destructive and validates MCP output schemas", () => {
