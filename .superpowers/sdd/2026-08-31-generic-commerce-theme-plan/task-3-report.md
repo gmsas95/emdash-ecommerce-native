@@ -68,4 +68,4 @@ Result: 37 package tests passed; typecheck and build passed.
 
 ## Commit
 
-Implementation commit: `07583783` (`feat: wire theme tokens into commerce template`).
+Implementation commit: `a0fd8bda` (`feat: wire theme tokens into commerce template`).
