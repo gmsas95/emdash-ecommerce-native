@@ -76,6 +76,21 @@ describe("theme token native plugin contract", () => {
     await invoke("tokens/execute", { operation: "theme.settings.reset", input: {} }, store);
     expect(store.get("settings:theme")).toEqual(DEFAULT_THEME_SETTINGS);
   });
+  it("returns machine-readable update constraints", async () => {
+    const result = await invoke("tokens/search", { query: "heading font", area: "typography" }) as { operations: Array<{ id: string; inputSchema: Record<string, unknown> }> };
+    const update = result.operations.find((item) => item.id === "theme.settings.update");
+    expect(update).toBeDefined();
+    const properties = (update?.inputSchema.properties as Record<string, unknown>).patch as Record<string, unknown>;
+    expect(properties.properties).toHaveProperty("typography.heading.font");
+    expect((properties.properties as Record<string, Record<string, unknown>>)["typography.heading.font"].enum).toContain("dm-sans");
+  });
+
+  it("turns patch validation failures into actionable route errors", async () => {
+    await expect(invoke("tokens/execute", {
+      operation: "theme.settings.update",
+      input: { patch: { "color.brand": "not-a-color" } },
+    })).rejects.toThrow(/Invalid theme settings patch:/i);
+  });
 
   it("marks execute destructive and validates MCP output schemas", () => {
     const plugin = createPlugin();
