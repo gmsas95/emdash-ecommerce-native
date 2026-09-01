@@ -26,13 +26,15 @@ function isCssColor(value: string): boolean {
   if (kind.startsWith("rgb")) {
     if (channels.length !== (kind === "rgba" ? 4 : 3)) return false;
     const validChannels = channels.slice(0, 3).every((channel) => channel.endsWith("%") ? isNumber(channel.slice(0, -1), 0, 100) : isNumber(channel, 0, 255));
-    return validChannels && (!fourth || fourth.endsWith("%") ? isNumber((fourth ?? "").slice(0, -1), 0, 100) : isNumber(fourth, 0, 1));
+    const validAlpha = fourth === undefined ? true : fourth.endsWith("%") ? isNumber(fourth.slice(0, -1), 0, 100) : isNumber(fourth, 0, 1);
+    return validChannels && validAlpha;
   }
   if (channels.length !== (kind === "hsla" ? 4 : 3)) return false;
   const hue = first.replace(/deg$/, "");
+  const validAlpha = fourth === undefined ? true : fourth.endsWith("%") ? isNumber(fourth.slice(0, -1), 0, 100) : isNumber(fourth, 0, 1);
   return isNumber(hue, 0, 360) && /^\d+(?:\.\d+)?%$/.test(second) && /^\d+(?:\.\d+)?%$/.test(third)
     && isNumber(second.slice(0, -1), 0, 100) && isNumber(third.slice(0, -1), 0, 100)
-    && (!fourth || fourth.endsWith("%") ? isNumber((fourth ?? "").slice(0, -1), 0, 100) : isNumber(fourth, 0, 1));
+    && validAlpha;
 }
 const cssLengthPattern = /^\d+(?:\.\d+)?(?:px|rem|em)$/;
 export const cssColorSchema = z.string().refine(isCssColor, "Expected a valid hex, rgb(), or hsl() color");

@@ -166,6 +166,14 @@ describe("theme token boundaries", () => {
       { "unknown.path": "value" },
     ]) expect(() => applyThemePatch(current, patch)).toThrow();
   });
+  it("accepts valid rgb and hsl colors", () => {
+    const result = applyThemePatch(resolveThemeSettings(undefined), {
+      "color.brand": "rgb(23, 107, 89)",
+      "color.accent": "hsla(42deg, 85%, 62%, 0.8)",
+    });
+    expect(result.settings.tokens.color.brand).toBe("rgb(23, 107, 89)");
+    expect(result.settings.tokens.color.accent).toBe("hsla(42deg, 85%, 62%, 0.8)");
+  });
 });
 
 describe("theme CSS emission", () => {
