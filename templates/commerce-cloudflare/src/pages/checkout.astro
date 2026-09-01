@@ -1,152 +1,22 @@
 ---
 import Base from "../layouts/Base.astro";
+import Breadcrumbs from "../components/layout/Breadcrumbs.astro";
+import Container from "../components/layout/Container.astro";
+import PageHeader from "../components/layout/PageHeader.astro";
+import { CheckoutIsland } from "../components/commerce/CheckoutIsland";
 import CmsPageContent from "../components/CmsPageContent.astro";
+import DemoNotice from "../components/DemoNotice.astro";
 import { loadCmsPage } from "../lib/cms";
 
 const { page, cacheHint } = await loadCmsPage("checkout");
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
 ---
-<Base title="Checkout" description="Review your cart and continue to payment.">
-  <div class="page-wrap section checkout-page">
-    <h1>Checkout</h1>
-    <div id="checkout-copy">
-      {page ? <CmsPageContent page={page} /> : <p class="notice">Final availability and totals are confirmed before payment.</p>}
-    </div>
-    <div id="checkout-summary" class="cart-summary" aria-live="polite"></div>
-    <form id="checkout-form" class="form-stack">
-      <div class="form-grid">
-        <label>Name <input name="name" required autocomplete="name" /></label>
-        <label>Email <input name="email" type="email" required autocomplete="email" /></label>
-        <label>Phone <input name="phone" autocomplete="tel" /></label>
-        <label>Country <input name="country" value="MY" required autocomplete="country" /></label>
-        <label>Address <input name="line1" required autocomplete="address-line1" /></label>
-        <label>Address line 2 <input name="line2" autocomplete="address-line2" /></label>
-        <label>City <input name="city" required autocomplete="address-level2" /></label>
-        <label>State <input name="state" autocomplete="address-level1" /></label>
-        <label>Postal code <input name="postalCode" required autocomplete="postal-code" /></label>
-      </div>
-      <label id="payment-method-field">Payment method <select id="payment-provider" name="paymentProvider"></select></label>
-      <button id="checkout-submit" type="submit">Continue to payment</button>
-      <p id="checkout-error" class="error-state" hidden role="alert"></p>
-      <p id="checkout-status" role="status"></p>
-    </form>
-    <script>
-      import { emitAnalytics } from "../lib/analytics";
-      import { commerceClient, formatMinorAmount } from "../lib/commerce";
-      import type { CheckoutResource } from "@emdash-commerce/core/storefront/types";
-
-      const form = document.querySelector("#checkout-form");
-      const submit = document.querySelector("#checkout-submit");
-      const errorNode = document.querySelector("#checkout-error");
-      const statusNode = document.querySelector("#checkout-status");
-      const summary = document.querySelector("#checkout-summary");
-      const paymentSelect = document.querySelector("#payment-provider");
-      let checkoutResource: CheckoutResource | undefined;
-      let idempotencyKey = crypto.randomUUID();
-
-      const showError = (message: string, disableSubmit = false) => {
-        if (errorNode instanceof HTMLElement) {
-          errorNode.hidden = false;
-          errorNode.textContent = message;
-        }
-        if (statusNode) statusNode.textContent = "";
-        if (submit instanceof HTMLButtonElement) submit.disabled = disableSubmit;
-      };
-
-      const renderResource = (resource: CheckoutResource) => {
-        if (summary) {
-          summary.replaceChildren();
-          const label = document.createElement("span");
-          label.textContent = resource.cart.lines.length ? "Current total" : "Cart";
-          const value = document.createElement("strong");
-          value.textContent = resource.cart.lines.length
-            ? formatMinorAmount(resource.totals.totalMinor, resource.totals.currency)
-            : "Your cart is empty";
-          summary.append(label, value);
-        }
-        if (paymentSelect instanceof HTMLSelectElement) {
-          paymentSelect.replaceChildren();
-          for (const method of resource.paymentMethods.filter((entry) => entry.enabled)) {
-            const option = document.createElement("option");
-            option.value = method.id;
-            option.textContent = method.label;
-            paymentSelect.append(option);
-          }
-          paymentSelect.disabled = paymentSelect.options.length === 0;
-        }
-        const empty = !resource.cart.lines.length;
-        if (submit instanceof HTMLButtonElement) submit.disabled = empty || !resource.paymentMethods.some((entry) => entry.enabled);
-        if (empty) showError("Your cart is empty. Return to the catalog before checking out.", true);
-      };
-
-      const load = async () => {
-        if (!(form instanceof HTMLFormElement)) return;
-        try {
-          checkoutResource = await commerceClient.checkout.get();
-          renderResource(checkoutResource);
-        } catch (error) {
-          showError(error instanceof Error ? error.message : "Unable to load checkout.");
-        }
-      };
-
-      if (form instanceof HTMLFormElement) {
-        form.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          if (!checkoutResource?.cart.lines.length) {
-            showError("Your cart is empty. Return to the catalog before checking out.");
-            return;
-          }
-          if (errorNode instanceof HTMLElement) errorNode.hidden = true;
-          if (statusNode) statusNode.textContent = "Preparing your secure payment...";
-          if (submit instanceof HTMLButtonElement) submit.disabled = true;
-          try {
-            const data = new FormData(form);
-            const name = String(data.get("name") ?? "").trim();
-            const email = String(data.get("email") ?? "").trim();
-            const phone = String(data.get("phone") ?? "").trim();
-            const shippingAddress = {
-              name,
-              line1: String(data.get("line1") ?? "").trim(),
-              city: String(data.get("city") ?? "").trim(),
-              postalCode: String(data.get("postalCode") ?? "").trim(),
-              country: String(data.get("country") ?? "").trim(),
-              ...(String(data.get("line2") ?? "").trim() ? { line2: String(data.get("line2") ?? "").trim() } : {}),
-              ...(String(data.get("state") ?? "").trim() ? { state: String(data.get("state") ?? "").trim() } : {}),
-              ...(phone ? { phone } : {}),
-            };
-            const paymentProvider = String(data.get("paymentProvider") ?? "");
-            await commerceClient.checkout.update({
-              paymentProvider,
-              customer: { name, email, ...(phone ? { phone } : {}) },
-              shippingAddress,
-            });
-            const checkout = await commerceClient.checkout.start({
-              paymentProvider,
-              idempotencyKey,
-              customer: { name, email, ...(phone ? { phone } : {}) },
-              shippingAddress,
-              expectedTotalMinor: checkoutResource.totals.totalMinor,
-            });
-            emitAnalytics({
-              name: "begin_checkout",
-              source: "client",
-              currency: checkoutResource.totals.currency,
-              items: checkoutResource.cart.lines.map((line) => ({
-                id: line.variantId || line.productId,
-                name: line.name,
-                quantity: line.quantity,
-              })),
-            });
-            window.localStorage.setItem("commerce-order-id", checkout.orderId);
-            window.localStorage.setItem("commerce-order-access-token", checkout.orderAccessToken);
-            window.location.href = checkout.checkoutUrl;
-          } catch (error) {
-            showError(error instanceof Error ? error.message : "Unable to start checkout. Return to the cart and try again.");
-          }
-        });
-      }
-
-      void load();
-    </script>
-  </div>
+<Base title="Checkout" description="Review your cart and continue to payment." variant="commerce">
+  <Container>
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Cart", href: "/cart" }, { label: "Checkout" }]} />
+    <PageHeader title="Checkout" lede="Complete your details, then continue to secure payment." />
+    {page ? <section class="commerce-card commerce-form-section checkout-copy"><CmsPageContent page={page} /></section> : <p class="notice">Final availability and totals are confirmed before payment.</p>}
+    <DemoNotice compact />
+    <CheckoutIsland client:load />
+  </Container>
 </Base>

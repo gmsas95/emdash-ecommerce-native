@@ -252,6 +252,10 @@ main { min-height: 70vh; }
 .commerce-order-meta dt { color: var(--theme-color-muted); font-family: var(--theme-font-ui); font-size: .72rem; }
 .commerce-order-meta dd { margin: .3rem 0 0; overflow-wrap: anywhere; font-family: var(--theme-font-ui); font-size: .84rem; font-weight: var(--theme-font-ui-weight); }
 .commerce-shell-empty { max-width: 560px; padding-block: 3rem 6rem; }
+.checkout-form { max-width: none; margin-bottom: clamp(3rem, 7vw, 6rem); }
+.checkout-form > .checkout-contact, .checkout-form > .checkout-payment { grid-column: 1; }
+.checkout-form > .commerce-summary { grid-column: 2; grid-row: 1 / span 2; align-self: start; }
+.checkout-copy { max-width: var(--theme-layout-narrowWidth); margin-bottom: var(--theme-layout-componentSpacing); }
 
 .shop-page .shop-intro { max-width: 56rem; padding-bottom: 2rem; }
 .shop-intro h1, .cms-page h1, .cart-page h1, .checkout-page h1, .order-page h1, .result-page h1 { max-width: 14ch; }
@@ -438,6 +442,7 @@ summary { cursor: pointer; font-family: var(--theme-font-ui); font-weight: var(-
   .commerce-container { width: min(100% - 2rem, var(--theme-layout-contentWidth)); }
   .commerce-layout { grid-template-columns: 1fr; }
   .commerce-summary { position: static; }
+  .checkout-form > .commerce-summary { grid-column: 1; grid-row: auto; }
 }
 @media (max-width: 700px) {
   .commerce-container { width: min(100% - 1.5rem, var(--theme-layout-contentWidth)); }
