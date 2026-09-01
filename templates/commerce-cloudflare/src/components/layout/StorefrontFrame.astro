@@ -1,0 +1,126 @@
+---
+import { EmDashBodyEnd, EmDashBodyStart, EmDashHead } from "emdash/ui";
+import AnnouncementBar from "./AnnouncementBar.astro";
+import SiteFooter from "./SiteFooter.astro";
+import SiteHeader from "./SiteHeader.astro";
+import type { PublicPageContext } from "emdash";
+
+interface MenuItem {
+  label: string;
+  url: string;
+  target?: string;
+}
+
+interface Props {
+  fullTitle: string;
+  pageDescription: string;
+  canonical?: string | null;
+  page: PublicPageContext;
+  themeCss: string;
+  themeSettings: {
+    variants: { header: string; hero: string; button: string; card: string; footer: string };
+    motion: { enabled: boolean; intensity: string; hover: string; reveal: string; durationScale: string; easing: string };
+    typography: { scale: string };
+  };
+  siteTitle: string;
+  siteTagline: string;
+  logoSrc: string;
+  logoAlt: string;
+  primaryItems: MenuItem[];
+  footerItems: MenuItem[];
+  variant?: "storefront" | "commerce";
+}
+
+const {
+  fullTitle,
+  pageDescription,
+  canonical,
+  page,
+  themeCss,
+  themeSettings,
+  siteTitle,
+  siteTagline,
+  logoSrc,
+  logoAlt,
+  primaryItems,
+  footerItems,
+  variant = "storefront",
+} = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    {pageDescription && <meta name="description" content={pageDescription} />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <EmDashHead page={page} />
+    <style is:inline data-theme-tokens set:html={themeCss}></style>
+  </head>
+  <body
+    class="theme-shell"
+    data-theme-header={themeSettings.variants.header}
+    data-theme-hero={themeSettings.variants.hero}
+    data-theme-button={themeSettings.variants.button}
+    data-theme-card={themeSettings.variants.card}
+    data-theme-footer={themeSettings.variants.footer}
+    data-theme-motion={themeSettings.motion.enabled ? themeSettings.motion.intensity : "none"}
+    data-theme-motion-hover={themeSettings.motion.hover}
+    data-theme-motion-reveal={themeSettings.motion.reveal}
+    data-theme-motion-duration={themeSettings.motion.durationScale}
+    data-theme-motion-easing={themeSettings.motion.easing}
+    data-theme-scale={themeSettings.typography.scale}
+    data-commerce-shell={variant}
+  >
+    <EmDashBodyStart page={page} />
+    <AnnouncementBar message={siteTagline} />
+    <SiteHeader siteTitle={siteTitle} logoSrc={logoSrc} logoAlt={logoAlt} primaryItems={primaryItems} />
+    <main>
+      <slot />
+    </main>
+    <SiteFooter siteTitle={siteTitle} siteTagline={siteTagline} logoSrc={logoSrc} logoAlt={logoAlt} footerItems={footerItems} variant={variant} />
+    <EmDashBodyEnd page={page} />
+    <script>
+      import { commerceClient } from "../../lib/commerce";
+      import { emitAnalytics, initAnalytics } from "../../lib/analytics";
+      initAnalytics();
+      emitAnalytics({
+        name: "page_view",
+        source: "client",
+        page: {
+          url: window.location.href,
+          path: window.location.pathname,
+          title: document.title,
+        },
+      });
+      for (const form of document.querySelectorAll("form")) {
+        const searchInput = form.querySelector('input[type="search"]');
+        if (!(searchInput instanceof HTMLInputElement)) continue;
+        form.addEventListener("submit", () => {
+          const query = searchInput.value.trim();
+          if (!query) return;
+          emitAnalytics({ name: "search", source: "client", properties: { query } });
+        });
+      }
+      for (const form of document.querySelectorAll('form[data-analytics-event="lead"]')) {
+        form.addEventListener("submit", () => {
+          emitAnalytics({ name: "lead", source: "client", properties: { form: "newsletter" } });
+        });
+      }
+
+      const countNode = document.querySelector("[data-cart-count]");
+      const updateCartCount = async () => {
+        if (!countNode) return;
+        try {
+          const cart = await commerceClient.cart.get();
+          countNode.textContent = String(cart.lines.reduce((total, line) => total + line.quantity, 0));
+        } catch {
+          countNode.textContent = "0";
+        }
+      };
+      void updateCartCount();
+      window.addEventListener("commerce-cart-updated", () => { void updateCartCount(); });
+    </script>
+  </body>
+</html>

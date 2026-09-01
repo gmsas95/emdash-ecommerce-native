@@ -1,0 +1,49 @@
+---
+import ProductMedia from "./ProductMedia.astro";
+import Price from "./Price.astro";
+
+interface SummaryLine {
+  name: string;
+  quantity: number;
+  unitAmountMinor: number;
+  totalMinor: number;
+  currency: string;
+  image?: { url: string; alt?: string; mediaId?: string };
+}
+
+interface Props {
+  lines: SummaryLine[];
+  subtotalMinor: number;
+  taxMinor?: number;
+  shippingMinor?: number;
+  totalMinor: number;
+  currency: string;
+  title?: string;
+}
+
+const { lines, subtotalMinor, taxMinor = 0, shippingMinor = 0, totalMinor, currency, title = "Order summary" } = Astro.props;
+---
+<section class="commerce-summary" aria-labelledby="commerce-summary-title">
+  <h2 id="commerce-summary-title">{title}</h2>
+  <div class="commerce-summary__lines">
+    {lines.map((line) => (
+      <article class="commerce-line-item">
+        <div class="commerce-line-item__media">
+          <ProductMedia src={line.image?.url} alt={line.image?.alt || line.name} width={96} height={96} />
+        </div>
+        <div class="commerce-line-item__copy">
+          <h3>{line.name}</h3>
+          <p>Qty {line.quantity} · <Price amountMinor={line.unitAmountMinor} currency={line.currency} /> each</p>
+        </div>
+        <strong><Price amountMinor={line.totalMinor} currency={line.currency} /></strong>
+      </article>
+    ))}
+  </div>
+  <dl class="commerce-summary__totals">
+    <div><dt>Subtotal</dt><dd><Price amountMinor={subtotalMinor} currency={currency} /></dd></div>
+    {taxMinor > 0 && <div><dt>Tax</dt><dd><Price amountMinor={taxMinor} currency={currency} /></dd></div>}
+    {shippingMinor > 0 && <div><dt>Shipping</dt><dd><Price amountMinor={shippingMinor} currency={currency} /></dd></div>}
+    <div class="commerce-summary__total"><dt>Total</dt><dd><Price amountMinor={totalMinor} currency={currency} /></dd></div>
+  </dl>
+  <slot />
+</section>

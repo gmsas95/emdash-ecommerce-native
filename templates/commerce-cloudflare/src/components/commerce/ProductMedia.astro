@@ -1,0 +1,17 @@
+---
+interface Props {
+  src?: string | null;
+  alt: string;
+  width?: number;
+  height?: number;
+  class?: string;
+}
+
+const { src, alt, width = 800, height = 800, class: className } = Astro.props;
+const trimmedSrc = typeof src === "string" ? src.trim() : "";
+const isRelativePath = trimmedSrc.startsWith("/") && !trimmedSrc.startsWith("//");
+const isAbsoluteHttpUrl = /^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(trimmedSrc);
+const imageSrc = isRelativePath || isAbsoluteHttpUrl ? trimmedSrc : "/commerce-placeholder.svg";
+const imageAlt = alt.trim() || "Product image";
+---
+<img class:list={["commerce-product-media", !src || imageSrc === "/commerce-placeholder.svg" ? "commerce-placeholder" : undefined, className]} src={imageSrc} alt={imageAlt} width={width} height={height} loading="lazy" decoding="async" />

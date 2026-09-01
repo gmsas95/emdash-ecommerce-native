@@ -1,14 +1,9 @@
 ---
-import {
-  EmDashBodyEnd,
-  EmDashBodyStart,
-  EmDashHead,
-} from "emdash/ui";
 import { getMenu, getPluginSetting, getSiteSettings } from "emdash";
 import { createPublicPageContext } from "emdash/page";
-import LiveSearch from "emdash/ui/search";
 import { emitThemeCss, resolveThemeSettings } from "@emdash-cms/theme-tokens";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import StorefrontFrame from "../components/layout/StorefrontFrame.astro";
 import "../styles/storefront.css";
 
 interface Props {
@@ -18,13 +13,13 @@ interface Props {
   image?: string | null;
   canonical?: string | null;
   content?: { collection: string; id: string; slug?: string | null };
+  variant?: "storefront" | "commerce";
 }
 
-const { title, pageTitle, description, image, canonical, content } = Astro.props;
+const { title, pageTitle, description, image, canonical, content, variant = "storefront" } = Astro.props;
 const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(await getSiteSettings());
 const rawThemeSettings = await getPluginSetting("emdash-theme-tokens", "theme");
 const themeSettings = resolveThemeSettings(rawThemeSettings);
-// Approved registry font files live under public/fonts at the paths emitted by the resolver.
 const themeCss = emitThemeCss(themeSettings);
 const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 const pageDescription = description ?? siteTagline;
@@ -47,126 +42,21 @@ const pageCtx = createPublicPageContext({
 const logoSrc = siteLogo?.url ?? "/media/demo/mark.svg";
 const logoAlt = siteLogo?.alt || siteTitle;
 ---
+<StorefrontFrame
+  fullTitle={fullTitle}
+  pageDescription={pageDescription}
+  canonical={canonical}
+  page={pageCtx}
+  themeCss={themeCss}
+  themeSettings={themeSettings}
+  siteTitle={siteTitle}
+  siteTagline={siteTagline}
+  logoSrc={logoSrc}
+  logoAlt={logoAlt}
+  primaryItems={primaryItems}
+  footerItems={footerItems}
+  variant={variant}
+>
+  <slot />
+</StorefrontFrame>
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{fullTitle}</title>
-    {pageDescription && <meta name="description" content={pageDescription} />}
-    {canonical && <link rel="canonical" href={canonical} />}
-    <EmDashHead page={pageCtx} />
-    <style is:inline data-theme-tokens set:html={themeCss}></style>
-  </head>
-  <body
-    class="theme-shell"
-    data-theme-header={themeSettings.variants.header}
-    data-theme-hero={themeSettings.variants.hero}
-    data-theme-button={themeSettings.variants.button}
-    data-theme-card={themeSettings.variants.card}
-    data-theme-footer={themeSettings.variants.footer}
-    data-theme-motion={themeSettings.motion.enabled ? themeSettings.motion.intensity : "none"}
-    data-theme-motion-hover={themeSettings.motion.hover}
-    data-theme-motion-reveal={themeSettings.motion.reveal}
-    data-theme-motion-duration={themeSettings.motion.durationScale}
-    data-theme-motion-easing={themeSettings.motion.easing}
-    data-theme-scale={themeSettings.typography.scale}
-  >
-    <EmDashBodyStart page={pageCtx} />
-    <div class="utility-bar">
-      <div class="utility-bar__inner">
-        <p>{siteTagline}</p>
-        <a class="utility-bar__link" href="/shop">Explore the collection <span aria-hidden="true">→</span></a>
-      </div>
-    </div>
-    <header class="site-header">
-      <div class="site-nav">
-        <a class="brand" href="/" aria-label={`${siteTitle} home`}>
-          <img class="brand-mark" src={logoSrc} alt={logoAlt} width="42" height="42" />
-          <span class="brand-name">{siteTitle}</span>
-        </a>
-        <nav class="site-menu site-menu--desktop" aria-label="Primary navigation">
-          {primaryItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
-        </nav>
-        <div class="site-nav__tools">
-          <LiveSearch placeholder="Search pages and stories" collections={["pages", "story_blocks"]} />
-          <a class="cart-link" href="/cart">Cart <span data-cart-count aria-live="polite">0</span></a>
-          <details class="mobile-menu">
-            <summary aria-label="Open navigation menu">Menu</summary>
-            <nav aria-label="Mobile navigation">
-              {primaryItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
-            </nav>
-          </details>
-        </div>
-      </div>
-    </header>
-    <main>
-      <slot />
-    </main>
-    <footer class="site-footer">
-      <div class="footer-brand">
-        <a class="brand brand--footer" href="/" aria-label={`${siteTitle} home`}>
-          <img class="brand-mark" src={logoSrc} alt={logoAlt} width="42" height="42" />
-          <span class="brand-name">{siteTitle}</span>
-        </a>
-        <p>{siteTagline}</p>
-        <p class="footer-note">A reusable Commerce storefront starter. Replace the demo catalog and copy before launch.</p>
-      </div>
-      <nav class="footer-links" aria-label="Footer navigation">
-        {footerItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
-      </nav>
-    </footer>
-    <EmDashBodyEnd page={pageCtx} />
-    <script>
-      import { commerceClient } from "../lib/commerce";
-      import { emitAnalytics, initAnalytics } from "../lib/analytics";
-
-      initAnalytics();
-      emitAnalytics({
-        name: "page_view",
-        source: "client",
-        page: {
-          url: window.location.href,
-          path: window.location.pathname,
-          title: document.title,
-        },
-      });
-      for (const form of document.querySelectorAll("form")) {
-        const searchInput = form.querySelector('input[type="search"]');
-        if (!(searchInput instanceof HTMLInputElement)) continue;
-        form.addEventListener("submit", () => {
-          const query = searchInput.value.trim();
-          if (!query) return;
-          emitAnalytics({
-            name: "search",
-            source: "client",
-            properties: { query },
-          });
-        });
-      }
-      for (const form of document.querySelectorAll('form[data-analytics-event="lead"]')) {
-        form.addEventListener("submit", () => {
-          emitAnalytics({
-            name: "lead",
-            source: "client",
-            properties: { form: "newsletter" },
-          });
-        });
-      }
-
-      const countNode = document.querySelector("[data-cart-count]");
-      const updateCartCount = async () => {
-        if (!countNode) return;
-        try {
-          const cart = await commerceClient.cart.get();
-          countNode.textContent = String(cart.lines.reduce((total, line) => total + line.quantity, 0));
-        } catch {
-          countNode.textContent = "0";
-        }
-      };
-      void updateCartCount();
-      window.addEventListener("commerce-cart-updated", () => { void updateCartCount(); });
-    </script>
-  </body>
-</html>

@@ -1,0 +1,12 @@
+---
+interface Props {
+  class?: string;
+  as?: keyof HTMLElementTagNameMap;
+}
+
+const { class: className, as = "section" } = Astro.props as Props;
+const Tag = as;
+---
+<Tag class:list={["commerce-card", className]}>
+  <slot />
+</Tag>

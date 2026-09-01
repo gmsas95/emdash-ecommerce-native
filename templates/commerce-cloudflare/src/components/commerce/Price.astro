@@ -1,0 +1,12 @@
+---
+import { formatMinorAmount } from "../../lib/commerce";
+
+interface Props {
+  amountMinor: number;
+  currency: string;
+  class?: string;
+}
+
+const { amountMinor, currency, class: className } = Astro.props;
+---
+<span class:list={["commerce-price", className]}>{formatMinorAmount(amountMinor, currency)}</span>

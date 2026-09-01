@@ -1,0 +1,39 @@
+---
+import LiveSearch from "emdash/ui/search";
+
+interface MenuItem {
+  label: string;
+  url: string;
+  target?: string;
+}
+
+interface Props {
+  siteTitle: string;
+  logoSrc: string;
+  logoAlt: string;
+  primaryItems: MenuItem[];
+}
+
+const { siteTitle, logoSrc, logoAlt, primaryItems } = Astro.props;
+---
+<header class="site-header">
+  <div class="site-nav">
+    <a class="brand" href="/" aria-label={`${siteTitle} home`}>
+      <img class="brand-mark" src={logoSrc} alt={logoAlt} width="42" height="42" />
+      <span class="brand-name">{siteTitle}</span>
+    </a>
+    <nav class="site-menu site-menu--desktop" aria-label="Primary navigation">
+      {primaryItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+    </nav>
+    <div class="site-nav__tools">
+      <LiveSearch placeholder="Search pages and stories" collections={["pages", "story_blocks"]} />
+      <a class="cart-link" href="/cart">Cart <span data-cart-count aria-live="polite">0</span></a>
+      <details class="mobile-menu">
+        <summary aria-label="Open navigation menu">Menu</summary>
+        <nav aria-label="Mobile navigation">
+          {primaryItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>

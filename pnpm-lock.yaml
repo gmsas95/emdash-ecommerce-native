@@ -2835,6 +2835,9 @@ importers:
       '@chip-in-asia/plugin-chip-for-emdash':
         specifier: github:gmsas95/chip-for-emdash#5d0ff8b
         version: https://codeload.github.com/gmsas95/chip-for-emdash/tar.gz/5d0ff8b3667be53d43fba2476c838ad1f5b08d16(emdash@packages+core)
+      '@cloudflare/kumo':
+        specifier: 'catalog:'
+        version: 2.6.0(@date-fns/tz@1.4.1)(@phosphor-icons/react@2.1.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@types/react@19.2.14)(date-fns@4.1.0)(echarts@6.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(zod@4.4.3)
       '@emdash-cms/analytics-core':
         specifier: workspace:*
         version: link:../../packages/analytics-core

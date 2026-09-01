@@ -1,0 +1,15 @@
+---
+interface Props {
+  message: string;
+  href?: string;
+  label?: string;
+}
+
+const { message, href = "/shop", label = "Shop now" } = Astro.props;
+---
+<div class="announcement-bar" role="note">
+  <div class="announcement-bar__inner">
+    <p>{message}</p>
+    {href && <a href={href}>{label} <span aria-hidden="true">→</span></a>}
+  </div>
+</div>

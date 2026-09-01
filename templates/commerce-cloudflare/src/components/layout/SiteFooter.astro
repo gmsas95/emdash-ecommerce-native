@@ -1,0 +1,31 @@
+---
+interface MenuItem {
+  label: string;
+  url: string;
+  target?: string;
+}
+
+interface Props {
+  siteTitle: string;
+  siteTagline: string;
+  logoSrc: string;
+  logoAlt: string;
+  footerItems: MenuItem[];
+  variant?: "storefront" | "commerce";
+}
+
+const { siteTitle, siteTagline, logoSrc, logoAlt, footerItems, variant = "storefront" } = Astro.props;
+---
+<footer class:list={["site-footer", `site-footer--${variant}`]}>
+  <div class="footer-brand">
+    <a class="brand brand--footer" href="/" aria-label={`${siteTitle} home`}>
+      <img class="brand-mark" src={logoSrc} alt={logoAlt} width="42" height="42" />
+      <span class="brand-name">{siteTitle}</span>
+    </a>
+    <p>{siteTagline}</p>
+    <p class="footer-note">A reusable Commerce storefront starter. Replace the demo catalog and copy before launch.</p>
+  </div>
+  <nav class="footer-links" aria-label="Footer navigation">
+    {footerItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
+  </nav>
+</footer>

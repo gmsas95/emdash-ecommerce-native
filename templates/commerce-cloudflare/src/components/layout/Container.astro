@@ -1,0 +1,12 @@
+---
+interface Props {
+  as?: keyof HTMLElementTagNameMap;
+  class?: string;
+}
+
+const { as = "div", class: className } = Astro.props as Props;
+const Tag = as;
+---
+<Tag class:list={["commerce-container", className]}>
+  <slot />
+</Tag>

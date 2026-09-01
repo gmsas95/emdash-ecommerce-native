@@ -18,6 +18,7 @@
     "@astrojs/cloudflare": "catalog:",
     "@astrojs/react": "catalog:",
     "@chip-in-asia/plugin-chip-for-emdash": "github:gmsas95/chip-for-emdash#5d0ff8b",
+    "@cloudflare/kumo": "catalog:",
     "@emdash-cms/analytics-core": "workspace:*",
     "@emdash-cms/analytics-facebook": "workspace:*",
     "@emdash-cms/analytics-ga4": "workspace:*",
