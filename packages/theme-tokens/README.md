@@ -112,9 +112,9 @@ type TypographyRole = {
   weight: number;
   style: "normal" | "italic";
 };
-```
-
 Plugin storage uses the public `THEME_SETTINGS_KEY` value `settings:theme` within the `emdash-theme-tokens` namespace. A storefront reads the `theme` setting with EmDash's plugin-settings API, then calls `resolveThemeSettings` and `emitThemeCss`; it does not call the private plugin routes during render.
+
+The `tokens.elevation.card` and `tokens.elevation.floating` values each accept exactly `none`, `0 5px 16px rgba(32,41,52,0.06)`, or `0 16px 40px rgba(32,41,52,0.12)`. Other shadow strings are rejected.
 
 ## Fonts and delivery
 

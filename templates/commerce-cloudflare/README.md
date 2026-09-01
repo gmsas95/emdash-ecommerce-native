@@ -2,7 +2,7 @@
 
 A neutral, product-first Astro storefront for EmDash Commerce on Cloudflare. The starter combines EmDash CMS, Commerce Core, the constrained native Page Composer, consent-aware analytics adapters, the native theme-token plugin, and the CHIP payment provider bridge.
 
-The template is intentionally client-neutral: site identity, editorial content, media, navigation, catalog data, and validated visual settings are CMS/seed data rather than reusable theme source.
+The template is intentionally client-neutral: site identity and editorial content are CMS/seed data, media and navigation are CMS-managed references, catalog and order data are Commerce Core data, and validated visual settings come from the theme plugin rather than reusable theme source.
 
 ## Install and run
 
@@ -17,7 +17,7 @@ The template declares `@emdash-cms/theme-tokens` as a workspace dependency and r
 
 ## First boot and seed data
 
-`package.json` points EmDash at `seed/seed.json`. On the first boot against an empty D1 database, when setup has not been completed, EmDash applies that seed and creates the neutral starter collections, menus, sections, settings, and sample catalog content. Existing databases are not overwritten by later builds. Replace or evolve CMS data through the admin interface and the documented seed/schema workflow rather than editing storefront components for client content.
+`package.json` points EmDash at `seed/seed.json`. On the first boot against an empty D1 database, when setup has not been completed, EmDash applies that seed and creates the neutral starter collections, menus, sections, and site settings. The sample catalog is separate: `src/data/demo-catalog.mjs` is passed to `commercePlugin({ demoCatalog })`, where Commerce Core uses it for the starter catalog. Existing databases are not overwritten by later builds. Replace CMS seed values through the admin interface and replace the demo catalog in the template/configuration before onboarding a client; ongoing product, inventory, cart, checkout, and order changes belong in Commerce Core's admin/API.
 
 The starter uses these Cloudflare bindings from `wrangler.jsonc`:
 
@@ -66,13 +66,13 @@ The theme runtime reads `getPluginSetting("emdash-theme-tokens", "theme")`, reso
 
 ## Theme composition and customization
 
-The Astro theme owns markup, behavior, responsive rules, accessibility, commerce interactions, and the approved component variants. EmDash owns site identity, content, media, menus, catalog, and the validated theme settings. Page Composer can insert and arrange registered sections; it does not accept arbitrary HTML, CSS, JavaScript, pixel coordinates, or copied Commerce state.
+The Astro theme owns markup, behavior, responsive rules, accessibility, commerce interactions, and the approved component variants. EmDash owns site identity, editorial content, media references, and menus; Commerce Core owns products, variants, prices, inventory, carts, checkout, orders, and payment state; the theme plugin owns validated visual settings. Page Composer can insert and arrange registered sections; it stores validated settings and references rather than arbitrary HTML, CSS, JavaScript, pixel coordinates, or copied Commerce state.
 
-Configure colors, typography, layout, shape, elevation, motion, and header/hero/button/card/footer variants in the **Theme Settings** admin page. The same bounded settings are available through the plugin's `emdash-theme-tokens__search` and `emdash-theme-tokens__execute` MCP tools. Unknown fonts, remote URLs, arbitrary CSS, and unsupported values are rejected. See the [theme-token guide](/guides/theme-tokens/) and [theme composition guide](/guides/theme-composition/).
+Configure colors, typography, layout, shape, elevation, motion, and header/hero/button/card/footer variants in the **Theme Settings** admin page. The same bounded settings are available through the plugin's `emdash-theme-tokens__search` and `emdash-theme-tokens__execute` MCP tools. Unknown fonts, arbitrary CSS/code, and unsupported theme-token values are rejected. Page Composer section schemas separately validate their own content fields; those fields can include strings such as `imageUrl` and `ctaHref`. See the [theme-token guide](/guides/theme-tokens/) and [theme composition guide](/guides/theme-composition/).
 
 ## Provider boundary
 
-CHIP remains a separate provider boundary even though this reference template registers its plugin. Commerce Core owns canonical products, inventory, carts, checkout, orders, payment state, and totals. The provider plugin owns its SDK, credentials, API calls, webhook verification, retries, and provider records. Communication uses the signed bridge configured in `astro.config.mjs`; provider credentials and bridge secrets never enter storefront content or analytics events.
+CHIP remains a separate provider boundary even though this reference template registers its plugin. Commerce Core owns canonical products, inventory, carts, checkout, orders, payment state, totals, and order-event envelopes. The provider plugin owns its SDK, credentials, API calls, webhook verification, retries, and provider records. Signed bridge event envelopes are persisted in Commerce Core's `orderEvents`; provider credentials and provider records remain provider-owned and are not copied into storefront content or analytics events.
 
 ## Analytics semantics
 

@@ -58,7 +58,7 @@ The layout group controls `contentWidth`, `narrowWidth`, `sectionSpacing`, `grid
 
 ### Shape and elevation
 
-Shape contains `radiusSmall`, `radiusMedium`, and `radiusLarge`. Elevation contains `card` and `floating`; each is selected from the approved `none`, card-shadow, or floating-shadow presets. Raw `box-shadow` strings are not accepted.
+Shape contains `radiusSmall`, `radiusMedium`, and `radiusLarge`. Elevation contains `card` and `floating`; each accepts exactly `none`, `0 5px 16px rgba(32,41,52,0.06)`, or `0 16px 40px rgba(32,41,52,0.12)`. Raw or other `box-shadow` strings are not accepted.
 
 The emitter produces stable variables such as `--theme-color-brand`, `--theme-layout-contentWidth`, `--theme-shape-radiusMedium`, and `--theme-elevation-card`. It also emits typography, motion, and variant variables for theme CSS.
 

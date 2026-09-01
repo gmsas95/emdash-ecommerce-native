@@ -10,18 +10,18 @@ The Commerce distribution is an EmDash workspace with Commerce Core and first-pa
 The starter has four cooperating layers:
 
 1. **Astro theme source** owns the storefront's markup, behavior, responsive rules, accessibility, commerce interactions, and stable page structure.
-2. **EmDash CMS** owns client data: site identity, editorial content, media, menus, catalog records, and validated plugin settings.
-3. **Page Composer** owns bounded, registered section layouts. It stores section types, settings, references, responsive presets, and visibility—not serialized HTML, CSS, JavaScript, or copied inventory.
-4. **Commerce Core** owns products, variants, inventory, carts, checkout, orders, totals, and payment state transitions.
+2. **EmDash CMS** owns client data: site identity, editorial content, media, menus, and validated plugin settings.
+3. **Page Composer** owns bounded, registered section layouts. It stores section types, settings, references, responsive presets, and visibility—not serialized HTML, CSS, JavaScript, or copied Commerce state.
+4. **Commerce Core** owns products, variants, prices, inventory, carts, checkout, orders, totals, payment state transitions, and catalog/order records.
 
-Theme components read the CMS and Commerce data at request time and consume CSS custom properties emitted by the theme-token resolver. Client onboarding therefore changes data and approved settings, not a fork of the theme source.
+The shell and CMS content render on the server. Catalog, product, cart, and checkout data are fetched and hydrated client-side through Commerce APIs. All layers consume CSS custom properties emitted by the theme-token resolver. Client onboarding therefore changes data and approved settings, not a fork of the theme source.
 
 ## Package map
 
 | Package | Responsibility |
 | --- | --- |
 | `@gmsas95/emdash-commerce-contracts` | Provider-neutral Commerce event and bridge contracts |
-| `@emdash-commerce/core` | Products, variants, inventory, carts, checkout, orders, and Commerce admin/API |
+| `@emdash-commerce/core` | Products, variants, prices, inventory, carts, checkout, orders, and Commerce admin/API |
 | `@emdash-cms/page-composer` | Versioned section layouts, validation, trusted editor, and rendering contract |
 | `@emdash-cms/theme-tokens` | Versioned visual settings, token resolution, CSS emission, admin settings, and the theme MCP tools |
 | `@emdash-cms/analytics-core` | Consent, normalized events, queueing, deduplication, and adapter isolation |
@@ -53,9 +53,9 @@ The complete template configuration also registers `commercePlugin()`, `pageComp
 
 ## Neutral starter onboarding
 
-`templates/commerce-cloudflare/seed/seed.json` is the starter's schema and sample data. The package's `emdash.seed` field points to it. On a first boot against an empty D1 database where setup is incomplete, EmDash applies the seed; an existing database is not overwritten by a later deploy. The seed provides neutral identity, pages, menus, registered sections, story content, and sample Commerce records so a fresh preview is usable.
+`templates/commerce-cloudflare/seed/seed.json` is the starter's CMS schema and sample CMS data. The package's `emdash.seed` field points to it. On a first boot against an empty D1 database where setup is incomplete, EmDash applies the seed; an existing database is not overwritten by a later deploy. The seed provides neutral identity, pages, menus, registered sections, and story content.
 
-For a client site, replace the seed's starter values with the client's CMS content and media, then manage ongoing edits in the admin UI. Keep the content model and source-controlled seed synchronized when evolving a deployed site. Do not put client names, product IDs, fallback flags, or media assumptions in reusable theme components.
+The sample catalog is separate: `templates/commerce-cloudflare/src/data/demo-catalog.mjs` is passed to `commercePlugin({ demoCatalog })`, where Commerce Core uses it for the starter products, variants, prices, and inventory. To onboard a client, replace the CMS seed values and demo catalog values in the template/configuration, then manage ongoing editorial changes in EmDash admin and product, inventory, cart, checkout, and order changes in Commerce Core's admin/API. Do not put client names, product IDs, fallback flags, or media assumptions in reusable theme components.
 
 ## Theme settings and token storage
 
@@ -71,9 +71,9 @@ The package rejects arbitrary CSS, code, class names, HTML, remote URLs, unregis
 
 ## Content, catalog, and Page Composer ownership
 
-Site identity, Portable Text, media references, menus, and page entries belong to EmDash. Commerce catalog records remain authoritative in Commerce Core; product sections store references and read current published product data instead of persisting prices or inventory. A saved Page Composer layout can arrange registered sections such as hero, image-text, feature columns, product grid, featured product, announcement, and newsletter. It cannot become a general-purpose visual page builder.
+Site identity, Portable Text, media references, menus, and page entries belong to EmDash. Commerce Core remains authoritative for products, variants, prices, inventory, carts, checkout, orders, and payment state. Product sections store Commerce references and read current catalog data through the Commerce client instead of persisting prices or inventory. A saved Page Composer layout can arrange registered sections such as hero, image-text, feature columns, product grid, featured product, announcement, and newsletter. It cannot become a general-purpose visual page builder.
 
-The theme supplies structure and accessible renderers for those sections. A client can add content, choose a registered layout preset, adjust validated settings, or change approved theme tokens without maintaining a client fork. If a requirement needs new markup or behavior, extend the theme package deliberately and keep client data in EmDash.
+The theme supplies structure and accessible renderers for those sections. A client can add content, choose a registered layout preset, adjust validated settings, or change approved theme tokens without maintaining a client fork. If a requirement needs new markup or behavior, extend the theme package deliberately and keep client data in EmDash or Commerce Core.
 
 ## Deployment notes
 
@@ -92,7 +92,7 @@ pnpm --filter @emdash-cms/template-commerce-cloudflare build
 pnpm --filter @emdash-cms/template-commerce-cloudflare deploy
 ```
 
-Commerce Core remains provider-neutral: payment, shipping, fulfillment, tax, and marketing integrations belong in separately reviewed provider plugins. The signed bridge keeps provider credentials and provider payloads outside the theme and Commerce storage boundary.
+Commerce Core remains provider-neutral: payment, shipping, fulfillment, tax, and marketing integrations belong in separately reviewed provider plugins. Signed bridge event envelopes and provider event payloads are persisted in Commerce Core's `orderEvents`; provider credentials and provider records remain provider-owned. The bridge keeps those credentials outside the theme and Commerce storage boundary.
 
 ## Analytics boundary
 
