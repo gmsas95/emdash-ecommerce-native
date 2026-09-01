@@ -32,7 +32,14 @@ describe("Commerce checkout integration", () => {
 
   it("runs the native checkout route with a fake payment provider and catalog pricing", async () => {
     const repositories = createMemoryRepositories();
-    await repositories.products.put("p-1", { id: "p-1", status: "published", name: "Tea", priceMinor: 1000, currency: "USD" });
+    await repositories.products.put("p-1", {
+      id: "p-1",
+      status: "published",
+      name: "Tea",
+      priceMinor: 1000,
+      currency: "USD",
+      images: [{ mediaId: "media-1", url: "https://cdn.example.test/tea.jpg", alt: "Tea" }],
+    });
     const storage = Object.fromEntries(Object.entries(repositories).map(([name, repository]) => [name, {
       get: async (id: string) => (await repository.get(id)) ?? null,
       put: (id: string, data: never) => repository.put(id, data),
@@ -60,11 +67,27 @@ describe("Commerce checkout integration", () => {
     });
     const context = (input: unknown, method: string, token?: string) => ({ input, request: request(method, token), storage, requestMeta: {} }) as never;
 
-    const cart = await plugin.routes.cart.handler(context({ line: { productId: "p-1", quantity: 2 } }, "POST")) as { id: string; token: string };
+    const cart = await plugin.routes.cart.handler(context({ line: { productId: "p-1", quantity: 2 } }, "POST")) as {
+      id: string;
+      token: string;
+      lines: Array<{ image?: unknown }>;
+    };
+    expect(cart.lines[0]?.image).toEqual({
+      mediaId: "media-1",
+      url: "https://cdn.example.test/tea.jpg",
+      alt: "Tea",
+    });
     const result = await plugin.routes.checkout.handler(context({ cartId: cart.id, paymentProvider: "payment-provider", idempotencyKey: "idem-1" }, "POST", cart.token)) as { orderId: string; checkoutUrl: string; totalMinor: number };
 
     expect(result.totalMinor).toBe(2000);
     expect(await repositories.orders.get(result.orderId)).toMatchObject({ status: "pending_payment", paymentStatus: "pending" });
+    const storedOrder = await repositories.orders.get(result.orderId);
+    expect(storedOrder).toMatchObject({
+      status: "pending_payment",
+      paymentStatus: "pending",
+      lines: [{ image: { mediaId: "media-1", url: "https://cdn.example.test/tea.jpg", alt: "Tea" } }],
+      items: [{ image: { mediaId: "media-1", url: "https://cdn.example.test/tea.jpg", alt: "Tea" } }],
+    });
     const replay = await plugin.routes.checkout.handler(context({ cartId: cart.id, paymentProvider: "payment-provider", idempotencyKey: "idem-1" }, "POST", cart.token));
     expect(replay).toEqual(result);
     expect(paymentCalls).toBe(1);

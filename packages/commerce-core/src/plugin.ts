@@ -1,7 +1,7 @@
 import { definePlugin, PluginRouteError } from "emdash";
 import type { PluginContext, PluginDescriptor, ResolvedPlugin, RouteContext } from "emdash";
 import { getCommerceEventSigningData, isISO4217CurrencyCode, parseAddressSnapshot } from "@gmsas95/emdash-commerce-contracts";
-import type { CommerceEvent, CustomerSnapshot } from "@gmsas95/emdash-commerce-contracts";
+import type { CommerceEvent, CustomerSnapshot, ProductMediaSnapshot } from "@gmsas95/emdash-commerce-contracts";
 import { z } from "zod";
 import { addCartLine, removeCartLine, replaceCartLineQuantity } from "./domain/cart.js";
 import { isRecord } from "./domain/guards.js";
@@ -537,10 +537,27 @@ function cartItemInput(context: RouteContext): CartItemInput {
   };
 }
 
+function primaryProductImage(product: Record<string, unknown>): ProductMediaSnapshot | undefined {
+  const images = product.images;
+  const first = Array.isArray(images) && isRecord(images[0]) ? images[0] : undefined;
+  if (!first || typeof first.url !== "string") return undefined;
+  const url = first.url.trim();
+  const isRelativePath = url.startsWith("/") && !url.startsWith("//");
+  const isAbsoluteHttpUrl = /^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(url);
+  if (!isRelativePath && !isAbsoluteHttpUrl) return undefined;
+  const mediaId = typeof first.mediaId === "string" && first.mediaId.trim() !== "" ? first.mediaId.trim() : undefined;
+  const alt = typeof first.alt === "string" && first.alt.trim() !== "" ? first.alt.trim() : undefined;
+  return {
+    ...(mediaId === undefined ? {} : { mediaId }),
+    url,
+    ...(alt === undefined ? {} : { alt }),
+  };
+}
+
 async function catalogCartItem(
   repositories: CommerceRepositories,
   input: CartItemInput,
-): Promise<{ productId: string; variantId?: string; sku?: string; name?: string; priceMinor: number; currency: string }> {
+): Promise<{ productId: string; variantId?: string; sku?: string; name?: string; priceMinor: number; currency: string; image?: ProductMediaSnapshot }> {
   const product = await repositories.products.get(input.productId);
   const variant = input.variantId === undefined ? undefined : await repositories.variants.get(input.variantId);
   const productData = isRecord(product) ? product : undefined;
@@ -556,11 +573,13 @@ async function catalogCartItem(
   if (typeof catalog.priceMinor !== "number" || typeof catalog.currency !== "string") {
     throw new PluginRouteError("PRODUCT_NOT_FOUND", "Product price is unavailable", 404);
   }
+  const image = primaryProductImage(productData);
   return {
     productId: input.productId,
     ...(input.variantId === undefined ? {} : { variantId: input.variantId }),
     ...(typeof catalog.sku === "string" ? { sku: catalog.sku } : {}),
     ...(typeof catalog.name === "string" ? { name: catalog.name } : {}),
+    ...(image === undefined ? {} : { image }),
     priceMinor: catalog.priceMinor,
     currency: catalog.currency,
   };
@@ -929,6 +948,7 @@ async function checkoutRoute(options: CommercePluginOptions, context: RouteConte
       if (!catalog || catalog.status !== "published" || (line.variantId !== undefined && (!variant || variant.status !== "published" || variant.productId !== line.productId)) || typeof catalog.priceMinor !== "number" || typeof catalog.currency !== "string") {
         throw new Error(`Product ${line.productId} is unavailable`);
       }
+      const image = line.image ?? (product === undefined ? undefined : primaryProductImage(product));
       return {
         lineId: line.lineId,
         productId: line.productId,
@@ -938,6 +958,7 @@ async function checkoutRoute(options: CommercePluginOptions, context: RouteConte
         unitAmountMinor: catalog.priceMinor,
         currency: catalog.currency,
         sku: typeof catalog.sku === "string" ? catalog.sku : line.sku,
+        ...(image === undefined ? {} : { image }),
       };
     }));
     const customerInput = parseCustomerInput(body.customer === undefined ? cart.checkoutState?.customer : body.customer);

@@ -1,4 +1,5 @@
 import { isISO4217CurrencyCode } from "@gmsas95/emdash-commerce-contracts";
+import type { ProductMediaSnapshot } from "@gmsas95/emdash-commerce-contracts";
 import {
   assertSafeNonNegativeMinorUnit,
   assertSafeQuantity,
@@ -18,6 +19,7 @@ export interface CartLine {
   quantity: number;
   currency: string;
   totalMinor?: number;
+  image?: ProductMediaSnapshot;
 }
 
 export interface Cart {
@@ -52,6 +54,7 @@ export interface AddCartLineInput {
   unitAmountMinor: number;
   quantity: number;
   currency?: string;
+  image?: ProductMediaSnapshot;
 }
 
 function lineKey(line: Pick<CartLine, "productId" | "variantId" | "sku">): string {
@@ -109,6 +112,7 @@ export function addCartLine(cart: Cart, input: AddCartLineInput): Cart {
     existing.quantity = quantity;
     existing.totalMinor = checkedMultiply(existing.unitAmountMinor, quantity, "cart line totalMinor");
     if (input.name !== undefined) existing.name = input.name;
+    if (existing.image === undefined && input.image !== undefined) existing.image = input.image;
   } else {
     lines.push({
       lineId: createLineId(cart, input),
@@ -116,6 +120,7 @@ export function addCartLine(cart: Cart, input: AddCartLineInput): Cart {
       ...(input.variantId === undefined ? {} : { variantId: input.variantId }),
       ...(input.sku === undefined ? {} : { sku: input.sku }),
       ...(input.name === undefined ? {} : { name: input.name }),
+      ...(input.image === undefined ? {} : { image: input.image }),
       unitAmountMinor: input.unitAmountMinor,
       quantity: input.quantity,
       currency,

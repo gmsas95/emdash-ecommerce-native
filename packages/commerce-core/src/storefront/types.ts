@@ -1,4 +1,4 @@
-import type { CustomerSnapshot } from "@gmsas95/emdash-commerce-contracts";
+import type { CustomerSnapshot, ProductMediaSnapshot } from "@gmsas95/emdash-commerce-contracts";
 import type { OrderSnapshot } from "../domain/orders.js";
 
 export interface CatalogResult<T = unknown> {
@@ -26,6 +26,7 @@ export interface StoreCartLine {
   quantity: number;
   currency: string;
   totalMinor: number;
+  image?: ProductMediaSnapshot;
 }
 
 export type CartResultLine = StoreCartLine;

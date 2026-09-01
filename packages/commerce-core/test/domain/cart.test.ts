@@ -9,10 +9,21 @@ describe("addCartLine", () => {
       lines: [{ lineId: "line-1", productId: "p-1", unitAmountMinor: 1000, quantity: 1, currency: "USD" }],
     };
 
-    const next = addCartLine(cart, { productId: "p-1", unitAmountMinor: 1000, quantity: 2, currency: "USD" });
+    const next = addCartLine(cart, {
+      productId: "p-1",
+      unitAmountMinor: 1000,
+      quantity: 2,
+      currency: "USD",
+      image: { mediaId: "media-1", url: "https://cdn.example.test/tea.jpg", alt: "Tea" },
+    });
 
     expect(next.lines).toHaveLength(1);
     expect(next.lines[0].quantity).toBe(3);
+    expect(next.lines[0].image).toEqual({
+      mediaId: "media-1",
+      url: "https://cdn.example.test/tea.jpg",
+      alt: "Tea",
+    });
     expect(cart.lines[0].quantity).toBe(1);
   });
   it("keeps line IDs unique when the same product price changes", () => {

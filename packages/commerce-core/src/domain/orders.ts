@@ -1,4 +1,4 @@
-import type { AddressSnapshot, CustomerSnapshot, Money, OrderItem, OrderSnapshot as ContractOrderSnapshot } from "@gmsas95/emdash-commerce-contracts";
+import type { AddressSnapshot, CustomerSnapshot, Money, OrderItem, OrderSnapshot as ContractOrderSnapshot, ProductMediaSnapshot } from "@gmsas95/emdash-commerce-contracts";
 import { calculateTotals } from "./totals.js";
 import type { OrderStatus, PaymentStatus } from "./order-state.js";
 
@@ -13,7 +13,8 @@ export interface OrderSnapshotLine {
   readonly currency: string;
   readonly unitPrice: Money;
   readonly total: Money;
-  readonly sku?: string;
+  sku?: string;
+  readonly image?: ProductMediaSnapshot;
 }
 
 export interface OrderSnapshot extends ContractOrderSnapshot {
@@ -44,6 +45,7 @@ export interface OrderSnapshotLineInput {
   priceMinor?: number;
   currency?: string;
   sku?: string;
+  image?: ProductMediaSnapshot;
 }
 
 export interface CreateOrderSnapshotInput {
@@ -156,6 +158,7 @@ export function createOrderSnapshot(input: CreateOrderSnapshotInput): OrderSnaps
       unitPrice: { amountMinor: unitAmountMinor, currency: input.currency },
       total: { amountMinor: totalMinor, currency: input.currency },
       ...(line.sku === undefined ? {} : { sku: line.sku }),
+      ...(line.image === undefined ? {} : { image: clone(line.image) }),
     } satisfies OrderSnapshotLine;
   });
 
@@ -166,6 +169,7 @@ export function createOrderSnapshot(input: CreateOrderSnapshotInput): OrderSnaps
     unitPrice: line.unitPrice,
     total: line.total,
     ...(line.sku === undefined ? {} : { sku: line.sku }),
+    ...(line.image === undefined ? {} : { image: clone(line.image) }),
   }));
 
   const snapshot: OrderSnapshot = {

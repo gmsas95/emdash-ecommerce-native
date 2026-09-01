@@ -40,7 +40,14 @@ describe("createOrderSnapshot", () => {
     const order = createOrderSnapshot({
       orderId: "o-2",
       currency: "USD",
-      lines: [{ lineId: "line-1", productId: "p-1", name: "Tea", quantity: 2, unitAmountMinor: 1000 }],
+      lines: [{
+        lineId: "line-1",
+        productId: "p-1",
+        name: "Tea",
+        quantity: 2,
+        unitAmountMinor: 1000,
+        image: { mediaId: "media-1", url: "https://cdn.example.test/tea.jpg", alt: "Tea" },
+      }],
       discountMinor: 200,
       taxMinor: 180,
       shippingMinor: 500,
@@ -53,6 +60,16 @@ describe("createOrderSnapshot", () => {
     expect(Object.isFrozen(order.lines)).toBe(true);
     expect(order.customer?.name).toBe("Ada");
     expect(order.totalMinor).toBe(2480);
+    expect(order.lines[0]?.image).toEqual({
+      mediaId: "media-1",
+      url: "https://cdn.example.test/tea.jpg",
+      alt: "Tea",
+    });
+    expect(order.items[0]?.image).toEqual({
+      mediaId: "media-1",
+      url: "https://cdn.example.test/tea.jpg",
+      alt: "Tea",
+    });
   });
 });
 
