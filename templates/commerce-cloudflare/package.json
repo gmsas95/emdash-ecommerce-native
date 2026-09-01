@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "pnpm --filter @gmsas95/emdash-commerce-contracts build && pnpm --filter @emdash-commerce/core build && astro build",
+    "build": "pnpm --filter @emdash-cms/theme-tokens build && pnpm --filter @gmsas95/emdash-commerce-contracts build && pnpm --filter @emdash-commerce/core build && astro build",
     "preview": "astro preview",
     "deploy": "pnpm run build && wrangler deploy",
     "typecheck": "astro check && pnpm --filter @gmsas95/emdash-commerce-contracts typecheck && pnpm --filter @emdash-commerce/core typecheck",

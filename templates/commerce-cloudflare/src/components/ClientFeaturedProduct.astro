@@ -48,11 +48,13 @@ const { productId } = Astro.props;
     title.textContent = data.name || "Untitled product";
     const variant = data.hasVariants ? data.variants?.[0] : undefined;
     const amount = document.createElement("span");
+    amount.className = "featured-product-card__price";
     const minor = variant?.priceMinor ?? data.priceMinor;
     amount.textContent = typeof minor === "number" && Number.isSafeInteger(minor) && minor >= 0
       ? formatMinorAmount(minor, variant?.currency || data.currency)
       : "Price set in Commerce admin";
     const cta = document.createElement("span");
+    cta.className = "featured-product-card__cta";
     cta.textContent = "View product →";
     details.append(title, amount, cta);
     link.append(productImage, details);
