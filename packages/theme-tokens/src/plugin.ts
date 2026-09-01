@@ -26,6 +26,7 @@ export type { ThemeExecuteInput, ThemeExecuteOutput, ThemeOperationDescription, 
 export const THEME_OPERATION_REGISTRY = themeOperationRegistry;
 export type ThemeOperationArea = NonNullable<ThemeSearchInput["area"]>;
 
+const SEARCH_STOP_WORDS: Record<string, true> = { a: true, an: true, and: true, for: true, in: true, of: true, on: true, or: true, the: true, to: true, with: true };
 function routeMethod(context: RouteContext): void {
   if (context.request.method !== "POST") throw new PluginRouteError("METHOD_NOT_ALLOWED", "Theme token routes require POST", 405);
 }
@@ -63,7 +64,9 @@ function outputChanges(changes: readonly ThemeChange[]) { return changes.map((ch
 export async function themeTokensSearchRoute(context: RouteContext): Promise<ThemeSearchOutput> {
   routeMethod(context);
   const input = parseRouteInput(themeSearchInputSchema, context.input);
-  const terms = input.query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const terms = input.query.trim().toLocaleLowerCase().split(/\s+/)
+    .map((term) => term.replace(/^[^\p{Letter}\p{Number}]+|[^\p{Letter}\p{Number}]+$/gu, ""))
+    .filter((term) => term.length > 0 && SEARCH_STOP_WORDS[term] !== true);
   const operations = themeOperationRegistry.filter((operation) => {
     if (input.area && operation.area !== input.area && operation.id !== "theme.settings.update") return false;
     const haystack = [operation.id, operation.area, operation.description, ...operation.keywords].join(" ").toLocaleLowerCase();

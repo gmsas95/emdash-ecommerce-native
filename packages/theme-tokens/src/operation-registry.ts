@@ -8,6 +8,7 @@ import {
   motionSchema,
   resolvedThemeSettingsSchema,
   themeChangeSchema,
+  themeFontRecordSchema,
   themeOperationSchema,
   themeTokenPatchSchema,
   variantsSchema,
@@ -108,7 +109,7 @@ const updateInputMetadata = {
 
 const OPERATION_DESCRIPTIONS: readonly ThemeOperationDescription[] = [
   { id: "theme.settings.get", area: "tokens", description: "Read normalized versioned theme settings.", inputSchema: { type: "object", properties: {}, additionalProperties: false }, destructive: false, keywords: ["settings", "theme", "tokens", "read", "get"] },
-  { id: "theme.settings.update", area: "tokens", description: "Apply validated changes to approved theme settings.", inputSchema: updateInputMetadata, destructive: true, keywords: ["settings", "theme", "tokens", "color", "typography", "heading", "font", "layout", "shape", "elevation", "motion", "variant", "update", "change"] },
+  { id: "theme.settings.update", area: "tokens", description: "Apply validated changes to approved theme settings.", inputSchema: updateInputMetadata, destructive: true, keywords: ["settings", "theme", "tokens", "color", "typography", "heading", "font", "layout", "shape", "elevation", "motion", "subtle", "product", "variant", "update", "change"] },
   { id: "theme.settings.reset", area: "tokens", description: "Restore all theme settings to approved defaults.", inputSchema: { type: "object", properties: {}, additionalProperties: false }, destructive: true, keywords: ["settings", "theme", "reset", "defaults"] },
   { id: "theme.fonts.list", area: "typography", description: "List approved font families, weights, subsets, and delivery modes.", inputSchema: { type: "object", properties: {}, additionalProperties: false }, destructive: false, keywords: ["fonts", "font", "typography", "google", "family", "weights", "subsets"] },
   { id: "theme.motion.get", area: "motion", description: "Read normalized motion settings.", inputSchema: { type: "object", properties: {}, additionalProperties: false }, destructive: false, keywords: ["motion", "animation", "hover", "reveal", "duration", "easing"] },
@@ -125,7 +126,7 @@ export const themeExecuteOutputSchema = z.discriminatedUnion("operation", [
   z.object({ operation: z.literal("theme.settings.get"), settings: resolvedThemeSettingsSchema, ...baseOutput }).strict(),
   z.object({ operation: z.literal("theme.settings.update"), settings: resolvedThemeSettingsSchema, ...baseOutput }).strict(),
   z.object({ operation: z.literal("theme.settings.reset"), settings: resolvedThemeSettingsSchema, ...baseOutput }).strict(),
-  z.object({ operation: z.literal("theme.fonts.list"), fonts: z.array(z.unknown()), ...baseOutput }).strict(),
+  z.object({ operation: z.literal("theme.fonts.list"), fonts: z.array(themeFontRecordSchema), ...baseOutput }).strict(),
   z.object({ operation: z.literal("theme.motion.get"), motion: motionSchema, ...baseOutput }).strict(),
   z.object({ operation: z.literal("theme.variants.list"), variants: variantsSchema, ...baseOutput }).strict(),
 ]);

@@ -85,23 +85,24 @@ export const themeChangeSchema = z.object({ path: z.string(), previous: z.unknow
 export type ThemeSettings = z.infer<typeof themeSettingsSchema>;
 export type ResolvedThemeSettings = z.infer<typeof resolvedThemeSettingsSchema>;
 export type ThemeTokenPatch = z.infer<typeof themeTokenPatchSchema>;
-export type ThemeFontRecord = {
-  id: FontId;
-  name: string;
-  displayName: string;
-  provider: (typeof FONT_PROVIDERS)[number];
-  weights: readonly number[];
-  italic: boolean;
-  supportsItalic: boolean;
-  variable: boolean;
-  supportsVariable: boolean;
-  subsets: readonly (typeof FONT_SUBSETS)[number][];
-  license: string;
-  fallback: string;
-  fallbackStack: string;
-  deliveryModes: readonly (typeof GOOGLE_DELIVERY_MODES)[number][];
-  googleFamily?: string;
-};
+export const themeFontRecordSchema = z.object({
+  id: z.enum(FONT_IDS),
+  name: z.string().min(1),
+  displayName: z.string().min(1),
+  provider: z.enum(FONT_PROVIDERS),
+  weights: z.array(z.number().int().min(100).max(900)).min(1),
+  italic: z.boolean(),
+  supportsItalic: z.boolean(),
+  variable: z.boolean(),
+  supportsVariable: z.boolean(),
+  subsets: z.array(z.enum(FONT_SUBSETS)).min(1).max(2),
+  license: z.string().min(1),
+  fallback: z.string().min(1),
+  fallbackStack: z.string().min(1),
+  deliveryModes: z.array(z.enum(GOOGLE_DELIVERY_MODES)).min(1).max(2),
+  googleFamily: z.string().min(1).optional(),
+}).strict();
+export type ThemeFontRecord = z.infer<typeof themeFontRecordSchema>;
 export type ThemeChange = z.infer<typeof themeChangeSchema>;
 export type ThemeOperation = z.infer<typeof themeOperationSchema>;
 export type ThemeTokenSchema = typeof tokenSchema;

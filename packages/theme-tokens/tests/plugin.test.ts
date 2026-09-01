@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RouteContext } from "emdash";
 
-import { DEFAULT_THEME_SETTINGS, compatibleGoogleFontWeights, createPlugin } from "../src/index.js";
+import { DEFAULT_THEME_SETTINGS, compatibleGoogleFontWeights, createPlugin, themeExecuteOutputSchema } from "../src/index.js";
 
 type TestResult = {
   operations: Array<{ id: string }>;
@@ -47,6 +47,21 @@ describe("theme token native plugin contract", () => {
     expect(JSON.stringify(result)).not.toContain("COMMERCE_BRIDGE_SECRET");
   });
 
+  it("matches documented natural-language theme queries", async () => {
+    const result = await invoke("tokens/search", { query: "heading font and subtle product motion" }) as TestResult;
+    expect(result.operations.map((item) => item.id)).toContain("theme.settings.update");
+  });
+
+
+  it("validates the font list output against registered font records", async () => {
+    const result = await invoke("tokens/execute", { operation: "theme.fonts.list", input: {} }) as { fonts: unknown[] };
+    expect(themeExecuteOutputSchema.safeParse(result).success).toBe(true);
+    expect(themeExecuteOutputSchema.safeParse({
+      operation: "theme.fonts.list",
+      fonts: [{ id: "inter" }],
+      changes: [],
+    }).success).toBe(false);
+  });
   it("execute rejects unknown operations and unsafe patches", async () => {
     await expect(invoke("tokens/execute", { operation: "theme.shell.rawCss", input: {} })).rejects.toThrow();
     await expect(invoke("tokens/execute", {
