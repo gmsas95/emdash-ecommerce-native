@@ -17,6 +17,7 @@
 - `PUBLIC_SITE_URL=http://localhost:4321 COMMERCE_BRIDGE_SECRET=test-secret pnpm --filter @emdash-cms/template-commerce-cloudflare build`
   - Theme tokens, commerce contracts, core, and Astro server build all completed successfully.
   - Existing Vite chunk-size and ineffective dynamic-import warnings remain; no build error occurred.
+  - The final build was rerun after the cart quantity control correction in `f276298b` and completed successfully.
 - Browser smoke at `http://127.0.0.1:4321/` and `/shop`
   - Homepage and product listing rendered with bundled image assets.
   - Product detail route loaded, add-to-cart incremented the cart count to 1, and `/cart` rendered its retry fallback because no commerce bridge service was available in the local smoke environment.
