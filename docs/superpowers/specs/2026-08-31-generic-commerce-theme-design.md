@@ -157,6 +157,8 @@ Header, hero, button, card, and footer variants are closed enums. Variant change
 
 The font registry includes system stacks and approved Google Fonts. MCP and admin settings select family IDs, never raw CSS URLs or arbitrary remote addresses.
 
+The initial registry includes `system-sans`, `system-serif`, `inter`, `plus-jakarta`, `source-sans`, `source-serif`, and `dm-sans`.
+
 A registry record contains:
 
 - stable family ID;
