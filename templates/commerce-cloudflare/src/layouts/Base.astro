@@ -24,9 +24,8 @@ const { title, pageTitle, description, image, canonical, content } = Astro.props
 const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(await getSiteSettings());
 const rawThemeSettings = await getPluginSetting("emdash-theme-tokens", "theme");
 const themeSettings = resolveThemeSettings(rawThemeSettings);
-// The reusable template does not ship third-party font binaries. Keep the resolver's
-// local fallback stacks and avoid emitting self-hosted URLs that cannot be served.
-const themeCss = emitThemeCss(themeSettings).replace(/@font-face\s*\{[^}]*\}\n?/g, "");
+// Approved registry font files live under public/fonts at the paths emitted by the resolver.
+const themeCss = emitThemeCss(themeSettings);
 const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 const pageDescription = description ?? siteTagline;
 const menu = await getMenu("primary");
