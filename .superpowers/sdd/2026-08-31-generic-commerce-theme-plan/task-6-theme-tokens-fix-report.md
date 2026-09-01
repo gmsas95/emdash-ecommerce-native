@@ -43,7 +43,7 @@ Result: no whitespace errors.
 
 ## Commit
 
-Implementation commit: `9141996f` (`fix: harden theme token search and outputs`).
+Implementation commits: `9141996f` (`fix: harden theme token search and outputs`) and `4cdd14a7` (`fix: preserve readonly theme font metadata`).
 
 ## Concerns
 
