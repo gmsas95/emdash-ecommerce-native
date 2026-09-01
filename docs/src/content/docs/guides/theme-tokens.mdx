@@ -1,0 +1,203 @@
+---
+title: Theme Tokens
+
+description: Configure bounded storefront design tokens, typography, motion, and native MCP operations.
+---
+
+`@emdash-cms/theme-tokens` gives an EmDash storefront a versioned, validated visual contract. The package supplies neutral defaults, an approved font registry, a resolver, deterministic CSS custom-property emission, a native **Theme Settings** admin page, and a narrow MCP surface.
+
+The theme-token plugin is trusted native code. It does not turn CMS settings into Astro, HTML, CSS, JavaScript, or arbitrary network requests.
+
+## Install and register
+
+The Commerce Cloudflare starter already declares the package and registers the plugin. A native EmDash Astro project registers it in its `emdash` integration:
+
+```ts
+import { themeTokensPlugin } from "@emdash-cms/theme-tokens";
+
+themeTokensPlugin();
+```
+
+The package also exports `createPlugin()` for hosts that resolve native plugins directly. The plugin ID is `emdash-theme-tokens`, and its admin page is labeled **Theme Settings**.
+
+## Settings object and storage key
+
+Theme settings are one versioned object with `version: 1`, `tokens`, `typography`, `motion`, and `variants` groups. The plugin's public key constant is:
+
+```ts
+import { THEME_SETTINGS_KEY } from "@emdash-cms/theme-tokens";
+
+THEME_SETTINGS_KEY; // "settings:theme"
+```
+
+Native plugin storage uses `settings:theme` inside the `emdash-theme-tokens` plugin namespace. The storefront reads the `theme` setting through EmDash's plugin-settings API and resolves it synchronously during server rendering:
+
+```astro
+---
+import { getPluginSetting } from "emdash";
+import { emitThemeCss, resolveThemeSettings } from "@emdash-cms/theme-tokens";
+
+const raw = await getPluginSetting("emdash-theme-tokens", "theme");
+const settings = resolveThemeSettings(raw);
+const css = emitThemeCss(settings);
+---
+<style set:html={css}></style>
+```
+
+Missing settings use the neutral defaults. Updates are normalized and persisted as the resolved versioned object, so the storefront does not need to call a plugin route to render.
+
+## Token groups
+
+### Colors
+
+The color group contains `brand`, `brandHover`, `accent`, `text`, `muted`, `surface`, `surfaceAlt`, `border`, `success`, and `danger`. Values are validated hex, `rgb()`/`rgba()`, or `hsl()`/`hsla()` colors. CSS functions such as `url()` are not accepted.
+
+### Layout
+
+The layout group controls `contentWidth`, `narrowWidth`, `sectionSpacing`, `gridGap`, and `componentSpacing`. Values are bounded CSS lengths (`px`, `rem`, or `em`) rather than arbitrary declarations. The resolver enforces package ranges, including a 320–2400px content width and 0–96px grid/component gaps.
+
+### Shape and elevation
+
+Shape contains `radiusSmall`, `radiusMedium`, and `radiusLarge`. Elevation contains `card` and `floating`; each is selected from the approved `none`, card-shadow, or floating-shadow presets. Raw `box-shadow` strings are not accepted.
+
+The emitter produces stable variables such as `--theme-color-brand`, `--theme-layout-contentWidth`, `--theme-shape-radiusMedium`, and `--theme-elevation-card`. It also emits typography, motion, and variant variables for theme CSS.
+
+### Component variants
+
+Variants are closed selections that switch known component styles without changing markup or accepting class names:
+
+| Component | Allowed values |
+| --- | --- |
+| Header | `standard`, `compact` |
+| Hero | `split`, `centered`, `minimal` |
+| Button | `solid`, `outline`, `soft` |
+| Card | `elevated`, `flat`, `bordered` |
+| Footer | `standard`, `minimal` |
+
+## Typography and the font registry
+
+Typography uses four semantic roles:
+
+- `display` — hero and marketing headlines;
+- `heading` — page and section headings;
+- `body` — paragraphs and long-form CMS content;
+- `ui` — navigation, labels, buttons, prices, forms, and metadata.
+
+Each role selects a registry family ID, weight, and `normal`/`italic` style. Global typography settings include `scale` (`compact`, `comfortable`, or `spacious`), `bodyLineHeight`, and `headingTracking`.
+
+The pinned registry contains these family IDs:
+
+- `system-sans` and `system-serif` (system fonts);
+- `inter`, `plus-jakarta`, `source-sans`, `source-serif`, and `dm-sans` (approved Google families).
+
+Registry records include the display name, provider, supported weights, italic/variable metadata, subsets, license metadata, local fallback stack, and delivery modes. Select IDs, never a raw CSS family, URL, or unregistered font. A selected weight must be available for that family; unsupported combinations are rejected or normalized through the package resolver.
+
+### Google Fonts preview and production delivery
+
+`typography.google` selects one approved family, its weights, `latin`/`latin-ext` subsets, and one delivery mode:
+
+- **`preview`** emits an allowlisted Google Fonts CSS `@import`, useful for rapid local iteration. It is the only mode that makes a third-party font request.
+- **`self-hosted`** emits `@font-face` declarations pointing to approved local `/fonts/{font-id}-{weight}.woff2` assets. Use this for production so visitors do not depend on Google Fonts availability or make a third-party request. The Commerce starter includes the approved registry files under `public/fonts`.
+
+Both modes emit local fallback stacks and use `font-display: swap`. The resolver only accepts registry families, supported weights, supported subsets, and `preview`/`self-hosted` delivery values. It rejects arbitrary remote URLs and unregistered fonts.
+
+## Motion and reduced motion
+
+Motion defaults to enabled, subtle intensity, `lift` hover, `fade` reveal, standard duration, and standard easing. The closed settings are:
+
+- `enabled`: boolean;
+- `intensity`: `none`, `subtle`, or `expressive`;
+- `hover`: `none`, `lift`, or `soft-scale`;
+- `reveal`: `none`, `fade`, or `fade-up`;
+- `durationScale`: `instant`, `fast`, `standard`, or `slow`;
+- `easing`: `standard`, `snappy`, or `smooth`.
+
+The emitter uses safe opacity, transform, and transition rules. It never requires client-side animation for useful HTML or first render. When `enabled` is false, animation, transition, and transform are disabled globally. Independently of that setting, emitted CSS includes a `prefers-reduced-motion: reduce` media query that shortens nonessential durations, stops transforms, and disables smooth scrolling. Components must preserve this behavior when they add approved motion.
+
+## Theme Settings admin
+
+The native plugin exposes one **Theme Settings** page at its admin root. Controls are grouped for Google Fonts delivery, color, typography, layout, shape/elevation, motion, and variants. The page loads the normalized settings, uses the same operation registry as MCP, validates edits before persistence, reports validation errors, and offers **Save settings** and **Reset defaults** actions. It does not expose raw CSS or a visual page-builder canvas.
+
+## MCP tools
+
+The plugin exposes **exactly two** namespaced MCP tools:
+
+- `emdash-theme-tokens__search`
+- `emdash-theme-tokens__execute`
+
+The manifest keys inside the plugin are `search` and `execute`; EmDash adds the `emdash-theme-tokens__` namespace. There are no additional theme-token MCP tools.
+
+### `emdash-theme-tokens__search`
+
+- **Permission:** `settings:read`.
+- **Input:** `{ query: string, area?: "tokens" | "typography" | "motion" | "variants" }`.
+- **Output:** matching operation descriptions, bounded allowed values, and machine-readable input schemas.
+
+Search is capability discovery, not a settings write. For example:
+
+```text
+theme search: "heading font and subtle product motion"
+```
+
+### `emdash-theme-tokens__execute`
+
+- **Permission:** `settings:manage` plus consent for the plugin's MCP access.
+- **Input:** `{ operation: string, input: unknown }`.
+- **Output:** a normalized operation result and applied change summary.
+- **Destructive metadata:** the tool is marked destructive because it can update or reset settings.
+
+The closed operation registry currently contains exactly these operations:
+
+```text
+theme.settings.get
+theme.settings.update
+theme.settings.reset
+theme.fonts.list
+theme.motion.get
+theme.variants.list
+```
+
+An update uses a dotted-path patch whose paths and values are validated by the package:
+
+```text
+theme execute: theme.settings.update
+
+input:
+{
+  "patch": {
+    "typography.heading.font": "dm-sans",
+    "typography.heading.weight": 700,
+    "color.brand": "#176b59",
+    "motion.enabled": false
+  }
+}
+```
+
+Other useful requests include `theme.settings.get` with `{}`, `theme.fonts.list` with `{}`, `theme.motion.get` with `{}`, `theme.variants.list` with `{}`, and `theme.settings.reset` with `{}`. Unknown operation names, arbitrary CSS, code, remote URLs, unregistered fonts, unsupported weights/subsets, and out-of-range values fail closed.
+
+**MCP execute is not arbitrary code execution.** It selects one operation from the closed registry, validates that operation's input, applies the resolver's allowlists and normalization, persists the settings object when appropriate, and returns a change summary. It cannot run model-written JavaScript, access a repository, fetch arbitrary network resources, read deployment credentials, or alter theme markup.
+
+## Public API
+
+The package exports schemas and types for theme consumers, defaults, the font registry, resolver/CSS functions, and the native plugin surface:
+
+```ts
+import {
+  DEFAULT_THEME_SETTINGS,
+  FONT_REGISTRY,
+  applyThemePatch,
+  emitThemeCss,
+  listThemeFonts,
+  resolveThemeSettings,
+  themeTokensPlugin,
+} from "@emdash-cms/theme-tokens";
+
+const settings = resolveThemeSettings(undefined);
+const changed = applyThemePatch(settings, {
+  "typography.heading.font": "dm-sans",
+});
+const css = emitThemeCss(changed.settings);
+const fonts = listThemeFonts("serif");
+```
+
+Use [Theme composition](/guides/theme-composition/) for the boundary between these visual controls, theme source, EmDash data, and Page Composer.

@@ -1,9 +1,20 @@
 ---
 title: Commerce Distribution
-description: Build and operate the personal EmDash distribution with Commerce Core and native storefront extensions.
+description: Build and operate the generic EmDash Commerce storefront with native theme settings and safe extensions.
 ---
 
-The Commerce distribution is an EmDash fork with Commerce Core and first-party native extensions in the same pnpm workspace. It is not a wrapper around EmDash and does not replace the EmDash plugin model.
+The Commerce distribution is an EmDash workspace with Commerce Core and first-party native extensions. The Cloudflare starter is a deployable Astro storefront, not a client-specific site and not a wrapper around EmDash.
+
+## Architecture and ownership
+
+The starter has four cooperating layers:
+
+1. **Astro theme source** owns the storefront's markup, behavior, responsive rules, accessibility, commerce interactions, and stable page structure.
+2. **EmDash CMS** owns client data: site identity, editorial content, media, menus, catalog records, and validated plugin settings.
+3. **Page Composer** owns bounded, registered section layouts. It stores section types, settings, references, responsive presets, and visibility—not serialized HTML, CSS, JavaScript, or copied inventory.
+4. **Commerce Core** owns products, variants, inventory, carts, checkout, orders, totals, and payment state transitions.
+
+Theme components read the CMS and Commerce data at request time and consume CSS custom properties emitted by the theme-token resolver. Client onboarding therefore changes data and approved settings, not a fork of the theme source.
 
 ## Package map
 
@@ -12,41 +23,79 @@ The Commerce distribution is an EmDash fork with Commerce Core and first-party n
 | `@gmsas95/emdash-commerce-contracts` | Provider-neutral Commerce event and bridge contracts |
 | `@emdash-commerce/core` | Products, variants, inventory, carts, checkout, orders, and Commerce admin/API |
 | `@emdash-cms/page-composer` | Versioned section layouts, validation, trusted editor, and rendering contract |
+| `@emdash-cms/theme-tokens` | Versioned visual settings, token resolution, CSS emission, admin settings, and the theme MCP tools |
 | `@emdash-cms/analytics-core` | Consent, normalized events, queueing, deduplication, and adapter isolation |
 | `@emdash-cms/analytics-facebook` | Facebook Pixel browser adapter |
 | `@emdash-cms/analytics-tiktok` | TikTok Pixel browser adapter |
 | `@emdash-cms/analytics-ga4` | GA4 browser adapter |
 
-Install the workspace once and register native plugins in `astro.config.mjs`:
+## Install and register the starter
+
+Install the workspace once:
 
 ```bash
 pnpm install
 ```
 
-```js title="astro.config.mjs"
-import { analyticsPlugin } from "@emdash-cms/analytics-core";
-import { pageComposerPlugin } from "@emdash-cms/page-composer";
-import { commercePlugin } from "@emdash-commerce/core";
+The template already declares `@emdash-cms/theme-tokens` and registers the plugin beside Commerce, Page Composer, analytics, and provider plugins. The essential registration is:
+
+```ts title="templates/commerce-cloudflare/astro.config.mjs"
+import { themeTokensPlugin } from "@emdash-cms/theme-tokens";
 
 emdash({
   plugins: [
-    commercePlugin(),
-    pageComposerPlugin(),
-    analyticsPlugin(),
+    themeTokensPlugin(),
   ],
 });
 ```
 
-Native packages are versioned with the distribution and run in-process. Keep Commerce Core provider-neutral: payment, shipping, fulfillment, tax, and marketing integrations belong in separately installed sandboxed provider plugins.
+The complete template configuration also registers `commercePlugin()`, `pageComposerPlugin()`, `analyticsPlugin()`, and the provider bridge. Keep those responsibilities separate: native packages run in-process with the distribution, while provider plugins retain their own SDKs, credentials, webhooks, retries, and provider records.
 
-## Provider boundary
+## Neutral starter onboarding
 
-Commerce Core owns canonical products, inventory, carts, checkout, orders, and payment state transitions. A provider plugin owns its SDK, credentials, API calls, webhook verification, retries, and provider-specific records. Communication uses the signed Commerce bridge; provider plugins must not write directly to Commerce storage tables.
+`templates/commerce-cloudflare/seed/seed.json` is the starter's schema and sample data. The package's `emdash.seed` field points to it. On a first boot against an empty D1 database where setup is incomplete, EmDash applies the seed; an existing database is not overwritten by a later deploy. The seed provides neutral identity, pages, menus, registered sections, story content, and sample Commerce records so a fresh preview is usable.
 
-The Cloudflare reference template is [`templates/commerce-cloudflare/README.md`](https://github.com/emdash-cms/emdash/tree/main/templates/commerce-cloudflare). CHIP is the reference external provider, not part of the native Commerce package.
+For a client site, replace the seed's starter values with the client's CMS content and media, then manage ongoing edits in the admin UI. Keep the content model and source-controlled seed synchronized when evolving a deployed site. Do not put client names, product IDs, fallback flags, or media assumptions in reusable theme components.
 
-## Compatibility
+## Theme settings and token storage
 
-Release the distribution packages together with a compatible EmDash peer range. Provider plugins declare their supported distribution range independently and must use documented public interfaces rather than private EmDash or Commerce storage internals.
+The theme-token plugin stores one versioned theme object through its native settings namespace. Its public settings key is `settings:theme` (`THEME_SETTINGS_KEY`); the runtime reads the same setting through:
 
-See [Theme composition](/guides/theme-composition/), [Analytics tracking](/guides/analytics-tracking/), and [Provider plugins](/guides/provider-plugins/) for the extension contracts.
+```ts
+const raw = await getPluginSetting("emdash-theme-tokens", "theme");
+```
+
+Missing settings resolve to neutral defaults. Valid settings are normalized before the theme emits CSS custom properties. Administrators can update the approved color, typography, layout, shape, elevation, motion, and component-variant controls from the **Theme Settings** admin page. The plugin's two MCP tools use the same operation registry and validation path; see [Theme tokens](/guides/theme-tokens/).
+
+The package rejects arbitrary CSS, code, class names, HTML, remote URLs, unregistered fonts, unsupported weights/subsets, and out-of-range values. Token settings never contain provider secrets.
+
+## Content, catalog, and Page Composer ownership
+
+Site identity, Portable Text, media references, menus, and page entries belong to EmDash. Commerce catalog records remain authoritative in Commerce Core; product sections store references and read current published product data instead of persisting prices or inventory. A saved Page Composer layout can arrange registered sections such as hero, image-text, feature columns, product grid, featured product, announcement, and newsletter. It cannot become a general-purpose visual page builder.
+
+The theme supplies structure and accessible renderers for those sections. A client can add content, choose a registered layout preset, adjust validated settings, or change approved theme tokens without maintaining a client fork. If a requirement needs new markup or behavior, extend the theme package deliberately and keep client data in EmDash.
+
+## Deployment notes
+
+The Cloudflare template expects these bindings from `wrangler.jsonc`:
+
+- `DB` — D1 for EmDash CMS and Commerce data;
+- `MEDIA` — R2 for media;
+- `SESSION` — KV for sessions.
+
+For a production build, the template's Astro configuration requires `PUBLIC_SITE_URL` and `COMMERCE_BRIDGE_SECRET`. The URL is used for provider bridge endpoints; the bridge secret is server-side and shared with the registered provider bridge. Supply both through the deployment environment, never source control. Provider credentials belong in provider-plugin settings.
+
+Build and deploy through the template's package scripts after configuring Cloudflare resources:
+
+```bash
+pnpm --filter @emdash-cms/template-commerce-cloudflare build
+pnpm --filter @emdash-cms/template-commerce-cloudflare deploy
+```
+
+Commerce Core remains provider-neutral: payment, shipping, fulfillment, tax, and marketing integrations belong in separately reviewed provider plugins. The signed bridge keeps provider credentials and provider payloads outside the theme and Commerce storage boundary.
+
+## Analytics boundary
+
+Storefront actions emit normalized `page_view`, `view_item`, and `add_to_cart` events. `purchase` and `refund` require `source: "server"` and server-confirmed Commerce state; a payment return URL is not confirmation. Consent is checked before provider scripts load or events dispatch.
+
+See [Theme composition](/guides/theme-composition/), [Theme tokens](/guides/theme-tokens/), [Analytics tracking](/guides/analytics-tracking/), and [Provider plugins](/guides/provider-plugins/) for the extension contracts.

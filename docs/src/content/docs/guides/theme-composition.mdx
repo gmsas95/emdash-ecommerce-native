@@ -1,13 +1,51 @@
 ---
 title: Theme Composition
-description: Create safe, responsive section layouts for Commerce storefronts.
+description: Extend a Commerce storefront while keeping structure in source and client data in EmDash.
 ---
 
-The native `@emdash-cms/page-composer` package provides the constrained visual composition layer for Commerce themes. It covers section stacks, responsive presets, validated settings, and a trusted editor without becoming a freeform canvas.
+A Commerce theme is a working Astro application. Its source defines the storefront structure and the server-rendered behavior around EmDash and Commerce data. The generic Commerce Cloudflare starter uses Page Composer for bounded section composition and `@emdash-cms/theme-tokens` for approved visual decisions; neither is a freeform code or visual-canvas runtime.
 
-## Stored layout
+## Ownership boundary
 
-A page stores a versioned layout, not serialized markup:
+Keep these responsibilities explicit:
+
+| Theme source owns | EmDash owns |
+| --- | --- |
+| HTML and semantic markup | Site identity, title, tagline, and logo/media references |
+| Server and browser behavior | Portable Text and other editorial content |
+| Responsive layout rules and breakpoints | Media assets and media metadata |
+| Accessibility semantics, labels, focus behavior, and keyboard interaction | Menus and navigation labels/URLs |
+| Commerce integration, product/cart/checkout targets, and data fetching | Published catalog products, variants, prices, inventory, and order data |
+| Safe empty states and error boundaries | Validated theme settings and component-variant selections |
+| CSS that consumes emitted theme variables | Page Composer layout instances and section settings |
+
+A client onboarding changes CMS data, catalog records, media, menus, Page Composer settings, and approved theme tokens. It should not require copying or editing the reusable Astro source.
+
+## Theme-owned structure
+
+The starter's source provides the common storefront shell and commerce routes:
+
+1. utility/site message area;
+2. header with identity, navigation, search, and cart;
+3. hero and CMS-managed media;
+4. product-first catalog and featured-product views;
+5. bounded content/trust/story sections;
+6. newsletter or contact CTA; and
+7. footer with identity and navigation.
+
+Shop, product, cart, checkout, and success pages retain predictable structure and server-render useful HTML. Theme code owns the markup, interaction state, responsive behavior, and accessible semantics while reading current CMS and Commerce values at render time.
+
+Theme components consume variables such as `--theme-color-brand`, `--theme-font-heading`, and `--theme-layout-contentWidth` and switch only approved variants. They do not accept client-authored HTML, CSS, JavaScript, class names, arbitrary URLs, pixel coordinates, or copied prices/inventory.
+
+## EmDash-owned data
+
+EmDash site settings provide the site's identity and logo. Collections provide pages, Portable Text, story/content entries, and other editorial fields. Media references resolve through the CMS media library. Menus provide navigation. Commerce Core remains authoritative for product details, variant selections, inventory, cart totals, checkout, and order state.
+
+A product section stores a product reference and reads the current published Commerce record at render time. It must not persist a copied price or inventory value in a Page Composer layout or editorial entry. If a reference is missing or unavailable, the registered renderer uses its safe empty state rather than executing unknown content.
+
+## Bounded Page Composer sections
+
+Page Composer stores a versioned layout tree, section IDs, validated settings, registered section types, responsive presets, and visibility. A layout is data, not serialized markup:
 
 ```ts
 type PageLayout = {
@@ -28,39 +66,38 @@ type SectionInstance = {
 };
 ```
 
-The API and storage boundary validates the version, IDs, registered section type, settings schema, presets, and responsive visibility before a layout is saved or rendered. Unknown sections are rejected rather than silently executed.
+The registry supplies each section's type, label, category, settings schema, supported presets, and server renderer. The Commerce starter includes bounded patterns such as hero, image-text, feature columns, FAQ, product grid, featured product, category grid, reviews, announcement, and newsletter. An extension can register a new section with its own schema and renderer; an unknown section is rejected or omitted safely.
 
-## Section registry
+The trusted editor supports insertion, section-tree reordering, duplication, removal, validated properties, constrained responsive presets, visibility, and preview. It does not persist arbitrary HTML, CSS, JavaScript, absolute positioning, pixel coordinates, unrestricted nested layout trees, or editor-authored order/payment state. Portable Text remains the editorial rich-text model.
 
-Each definition supplies a type, editor label, category, settings schema, supported presets, and a server-rendered renderer:
+## Responsive and accessible behavior
 
-```ts
-const registry = createSectionRegistry([
-  {
-    type: "hero",
-    label: "Hero",
-    category: "content",
-    settingsSchema: heroSettings,
-    supportedPresets: ["stack", "center", "wide"],
-    render: renderHero,
-  },
-]);
-```
+Responsive rules belong to theme source, not to client data. The source chooses how headers, grids, controls, media, typography, and spacing reflow at desktop, tablet, and mobile sizes. Presets constrain section intent; they do not let an editor inject breakpoints or CSS.
 
-The initial registry includes `hero`, `image-text`, `feature-columns`, `faq`, `product-grid`, `featured-product`, `category-grid`, `reviews`, `announcement`, and `newsletter`. Product sections store product references and read current published Commerce data at render time; they never persist copied price or inventory. Category and review sections have validated references and safe empty states until a compatible extension supplies those data sources.
+Every renderer should preserve semantic heading order, meaningful landmarks, text alternatives for media, visible focus, keyboard access, touch-sized controls, and usable forms. Validate a layout before selecting a renderer, render sections server-side with page context, and provide an accessible fallback or safe omission for unavailable content. Theme motion must always honor `prefers-reduced-motion: reduce`; the theme-token emitter provides the baseline override.
 
-## Editor scope
+Typography is semantic rather than tied to a component's hardcoded brand family: `display` serves hero/marketing headlines, `heading` serves page and section headings, `body` serves long-form content, and `ui` serves navigation, labels, prices, forms, and metadata. Select approved registry IDs through Theme Settings; use Google Fonts preview only for iteration and self-host approved files in production. See [Theme tokens](/guides/theme-tokens/) for the registry and delivery contract.
 
-The trusted React editor supports insertion, section-tree reordering, duplication, removal, validated settings, constrained layout presets, responsive visibility, and preview. Block Kit is used for property controls only. The section tree and preview remain native trusted UI.
+## How to extend without client forks
 
-Layouts intentionally do not accept arbitrary HTML, JavaScript, CSS, absolute positioning, pixel coordinates, unrestricted nested layout trees, or editor-authored order/payment state. Keep Portable Text as the editorial rich-text model.
+Use this sequence when a site needs a new presentation or capability:
+
+1. Put client copy, media, navigation, and catalog data in EmDash collections, settings, menus, media, or Commerce Core.
+2. Use existing theme variants, token settings, and registered Page Composer sections where they express the requirement.
+3. If a reusable structural pattern is missing, add a typed section definition and server renderer to the theme source; keep its settings schema bounded and its content references explicit.
+4. Add responsive and accessibility behavior in that source renderer, and consume theme-token variables instead of embedding brand values.
+5. Keep payment/provider behavior behind Commerce Core's documented bridge and provider-plugin boundary.
+6. Update the shared template and seed/schema contract rather than copying the template into a client-only fork.
+
+Do not solve a one-site content request by adding conditionals keyed to a client name, a product ID, or an environment flag. Do not expose repository access or arbitrary code execution in the production theme. A future repository/design concierge workflow is a separate, sandboxed development workflow; it is not Page Composer or the theme-token MCP execute tool.
 
 ## Rendering rules
 
 1. Validate the layout before selecting a renderer.
 2. Render sections server-side with page context.
-3. Provide an accessible fallback or safe omission for unavailable sections.
+3. Read current published Commerce data for product references.
 4. Keep draft Commerce records private; preview must not publish draft products.
-5. Preserve semantic headings, keyboard interaction, text alternatives, visible focus, and reduced-motion behavior.
+5. Preserve semantic headings, keyboard interaction, text alternatives, visible focus, responsive behavior, and reduced-motion behavior.
+6. Emit normalized analytics events from stable theme targets; theme code does not call provider pixels directly.
 
-Themes expose stable semantic product, cart, checkout, search, and lead targets. Theme code does not call Facebook Pixel, TikTok Pixel, or GA4 directly; the analytics runtime consumes normalized events from those targets.
+Themes expose stable semantic product, cart, checkout, search, and lead targets. The analytics runtime consumes normalized events from those targets and independently handles consent and provider adapters.
