@@ -117,7 +117,7 @@ const homeLayout = await loadPageLayout("home", Astro.url, Astro.locals.emdash?.
         <h2 id="editorial-heading">Made to fit your everyday.</h2>
       </div>
       <div class="rich-text">
-        {homePage?.data.content ? <PortableText value={homePage.data.content as never} /> : <p>{siteTagline}</p>}
+        <p>{siteTagline} Browse a focused selection, read the details, and make your next choice with confidence.</p>
       </div>
     </div>
   </section>

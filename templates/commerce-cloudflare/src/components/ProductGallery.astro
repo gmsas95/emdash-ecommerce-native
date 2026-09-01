@@ -2,7 +2,7 @@
 import { imageUrl, type CatalogProduct } from "../lib/commerce";
 interface Props { product: CatalogProduct; }
 const { product } = Astro.props;
-const images = product.images.length > 0 ? product.images : [{ mediaId: "placeholder", url: "/media/demo/product.svg", alt: product.name }];
+const images = product.images.length > 0 ? product.images : [{ mediaId: "placeholder", url: "/commerce-placeholder.svg", alt: product.name }];
 ---
 <div class="product-gallery">
   <img id="product-main-image" src={imageUrl(images[0].url)} alt={images[0].alt || product.name} width="800" height="800" />
@@ -15,7 +15,7 @@ const images = product.images.length > 0 ? product.images : [{ mediaId: "placeho
     button.addEventListener("click", () => {
       const image = document.querySelector("#product-main-image");
       if (image instanceof HTMLImageElement) {
-        image.src = button.getAttribute("data-product-image") || "/media/demo/product.svg";
+        image.src = button.getAttribute("data-product-image") || "/commerce-placeholder.svg";
         image.alt = button.getAttribute("data-product-alt") || "Product image";
       }
     });

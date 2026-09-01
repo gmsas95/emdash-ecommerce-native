@@ -24,7 +24,9 @@ const { title, pageTitle, description, image, canonical, content } = Astro.props
 const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(await getSiteSettings());
 const rawThemeSettings = await getPluginSetting("emdash-theme-tokens", "theme");
 const themeSettings = resolveThemeSettings(rawThemeSettings);
-const themeCss = emitThemeCss(themeSettings);
+// The reusable template does not ship third-party font binaries. Keep the resolver's
+// local fallback stacks and avoid emitting self-hosted URLs that cannot be served.
+const themeCss = emitThemeCss(themeSettings).replace(/@font-face\s*\{[^}]*\}\n?/g, "");
 const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 const pageDescription = description ?? siteTagline;
 const menu = await getMenu("primary");
@@ -66,6 +68,11 @@ const logoAlt = siteLogo?.alt || siteTitle;
     data-theme-card={themeSettings.variants.card}
     data-theme-footer={themeSettings.variants.footer}
     data-theme-motion={themeSettings.motion.enabled ? themeSettings.motion.intensity : "none"}
+    data-theme-motion-hover={themeSettings.motion.hover}
+    data-theme-motion-reveal={themeSettings.motion.reveal}
+    data-theme-motion-duration={themeSettings.motion.durationScale}
+    data-theme-motion-easing={themeSettings.motion.easing}
+    data-theme-scale={themeSettings.typography.scale}
   >
     <EmDashBodyStart page={pageCtx} />
     <div class="utility-bar">
@@ -84,8 +91,7 @@ const logoAlt = siteLogo?.alt || siteTitle;
           {primaryItems.map((item) => <a href={item.url} target={item.target}>{item.label}</a>)}
         </nav>
         <div class="site-nav__tools">
-          <LiveSearch placeholder="Search products and pages" collections={["pages", "story_blocks"]} />
-          <a class="nav-account" href="/orders/">Account</a>
+          <LiveSearch placeholder="Search pages and stories" collections={["pages", "story_blocks"]} />
           <a class="cart-link" href="/cart">Cart <span data-cart-count aria-live="polite">0</span></a>
           <details class="mobile-menu">
             <summary aria-label="Open navigation menu">Menu</summary>
