@@ -54,6 +54,7 @@ import DemoNotice from "../components/DemoNotice.astro";
             const lineTotal = document.createElement("strong");
             lineTotal.className = "cart-row__total";
             lineTotal.textContent = formatMinorAmount(line.totalMinor, line.currency);
+            const quantity = document.createElement("input");
             quantity.type = "number";
             quantity.min = "1";
             quantity.max = "99";
