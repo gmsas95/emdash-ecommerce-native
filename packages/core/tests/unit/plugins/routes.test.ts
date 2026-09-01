@@ -353,6 +353,34 @@ describe("PluginRouteHandler", () => {
 			expect(result.error?.message).toBe("No access");
 		});
 
+		it("handles PluginRouteError from a duplicate runtime bundle", async () => {
+			class ForeignPluginRouteError extends Error {
+				code = "PAYMENT_PROVIDER_ERROR";
+				status = 502;
+				name = "PluginRouteError";
+			}
+
+			const plugin = createTestPlugin({
+				routes: {
+					fail: {
+						handler: async () => {
+							throw new ForeignPluginRouteError("Payment provider failed");
+						},
+					},
+				},
+			});
+			const handler = new PluginRouteHandler(plugin, createMockFactoryOptions());
+
+			const result = await handler.invoke("fail", {
+				request: new Request("http://test.com"),
+			});
+
+			expect(result.success).toBe(false);
+			expect(result.status).toBe(502);
+			expect(result.error?.code).toBe("PAYMENT_PROVIDER_ERROR");
+			expect(result.error?.message).toBe("Payment provider failed");
+		});
+
 		it("handles unknown errors from handler", async () => {
 			const plugin = createTestPlugin({
 				routes: {

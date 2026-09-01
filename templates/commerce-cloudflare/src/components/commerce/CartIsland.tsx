@@ -112,17 +112,19 @@ export function CartIsland() {
                   {line.sku && <p>SKU {line.sku}</p>}
                   <p>{formatMinorAmount(line.unitAmountMinor, line.currency)} each</p>
                 </div>
-                <Input
-                  type="number"
-                  size="sm"
-                  min={1}
-                  max={99}
-                  value={drafts[line.lineId] ?? String(line.quantity)}
-                  label={`Quantity for ${name}`}
-                  disabled={isPending}
-                  onChange={(event) => setDrafts((current) => ({ ...current, [line.lineId]: event.target.value }))}
-                  onBlur={(event) => void updateQuantity(line.lineId, event.target.value)}
-                />
+                <div className="cart-row__quantity">
+                  <Input
+                    type="number"
+                    size="sm"
+                    min={1}
+                    max={99}
+                    value={drafts[line.lineId] ?? String(line.quantity)}
+                    label={`Quantity for ${name}`}
+                    disabled={isPending}
+                    onChange={(event) => setDrafts((current) => ({ ...current, [line.lineId]: event.target.value }))}
+                    onBlur={(event) => void updateQuantity(line.lineId, event.target.value)}
+                  />
+                </div>
                 <strong className="cart-row__total">{formatMinorAmount(line.totalMinor, line.currency)}</strong>
                 <Button type="button" variant="outline" disabled={isPending} onClick={() => void removeLine(line)}>Remove</Button>
               </article>

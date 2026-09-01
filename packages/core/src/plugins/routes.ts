@@ -254,8 +254,9 @@ export class PluginRouteHandler {
 					status: error.status,
 				};
 			}
-			// Handle known error types
-			if (error instanceof PluginRouteError) {
+			// Native plugins can be bundled with a second copy of EmDash. Match
+			// the stable error shape as well as the local constructor identity.
+			if (isPluginRouteError(error)) {
 				return {
 					success: false,
 					error: {
@@ -361,6 +362,18 @@ export class PluginRouteError extends Error {
 	static internal(message: string = "Internal error"): PluginRouteError {
 		return new PluginRouteError("INTERNAL_ERROR", message, 500);
 	}
+}
+
+function isPluginRouteError(error: unknown): error is PluginRouteError {
+	if (error instanceof PluginRouteError) return true;
+	if (!(error instanceof Error) || error.name !== "PluginRouteError") return false;
+	const candidate = error as Partial<PluginRouteError>;
+	return (
+		typeof candidate.code === "string" &&
+		Number.isInteger(candidate.status) &&
+		candidate.status >= 400 &&
+		candidate.status < 600
+	);
 }
 
 /**
