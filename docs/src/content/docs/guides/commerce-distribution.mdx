@@ -14,7 +14,7 @@ The starter has four cooperating layers:
 3. **Page Composer** owns bounded, registered section layouts. It stores section types, settings, references, responsive presets, and visibility—not serialized HTML, CSS, JavaScript, or copied Commerce state.
 4. **Commerce Core** owns products, variants, prices, inventory, carts, checkout, orders, totals, payment state transitions, and catalog/order records.
 
-The shell and CMS content render on the server. Catalog, product, cart, and checkout data are fetched and hydrated client-side through Commerce APIs. All layers consume CSS custom properties emitted by the theme-token resolver. Client onboarding therefore changes data and approved settings, not a fork of the theme source.
+The shell and CMS content render on the server. Catalog, product, cart, and checkout data are fetched and hydrated client-side through Commerce APIs. Astro theme components consume CSS custom properties emitted by the theme-token resolver. Client onboarding therefore changes data and approved settings, not a fork of the theme source.
 
 ## Package map
 

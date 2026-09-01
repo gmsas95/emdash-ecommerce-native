@@ -9,15 +9,15 @@ A Commerce theme is a working Astro application. Its source defines the storefro
 
 Keep these responsibilities explicit:
 
-| Theme source owns | EmDash owns |
-| --- | --- |
-| HTML and semantic markup | Site identity, title, tagline, and logo/media references |
-| Server and browser behavior | Portable Text and other editorial content |
-| Responsive layout rules and breakpoints | Media assets and media metadata |
-| Accessibility semantics, labels, focus behavior, and keyboard interaction | Menus and navigation labels/URLs |
-| Commerce integration, product/cart/checkout targets, and data-fetching glue | Published Commerce catalog: products, variants, prices, inventory, carts, checkout, orders, and payment state |
-| Safe empty states and error boundaries | Validated theme settings and component-variant selections |
-| CSS that consumes emitted theme variables | Page Composer layout instances and section settings |
+| Theme source owns | EmDash CMS/plugin owns | Commerce Core owns |
+| --- | --- | --- |
+| HTML and semantic markup | Site identity, title, tagline, and logo/media references | — |
+| Server and browser behavior | Portable Text and other editorial content | — |
+| Responsive layout rules and breakpoints | Media assets and media metadata | — |
+| Accessibility semantics, labels, focus behavior, and keyboard interaction | Menus, validated theme settings, and component-variant selections | — |
+| Commerce integration, product/cart/checkout targets, and data-fetching glue | Page Composer layout instances and section settings | Published catalog: products, variants, prices, inventory, carts, checkout, orders, and payment state |
+| Safe empty states and error boundaries | — | — |
+| CSS that consumes emitted theme variables | — | — |
 
 A client onboarding changes CMS data, Commerce catalog data, media, menus, Page Composer settings, and approved theme tokens. It should not require copying or editing the reusable Astro source.
 
