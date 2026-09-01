@@ -12,6 +12,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./admin": {
+      "development": "./src/admin.tsx",
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.js",
+      "default": "./dist/admin.js"
     }
   },
   "files": ["dist"],
@@ -22,6 +28,10 @@
   },
   "dependencies": {
     "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "emdash": "workspace:*",
+    "react": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "vitest": "catalog:"
