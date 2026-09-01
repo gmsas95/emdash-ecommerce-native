@@ -2,7 +2,7 @@
 
 ## Scope
 
-Fixed the final review findings in `packages/theme-tokens` only. Template and documentation files were not changed.
+Fixed the final review findings in `packages/theme-tokens` only. Template and public documentation files were not changed; this report is the requested verification artifact.
 
 - Theme search now strips punctuation and grammatical stop words and advertises the meaningful `subtle` and `product` terms for `theme.settings.update`, so the documented natural-language query discovers the update capability.
 - Added and exported `themeFontRecordSchema` with registry identity, provider, weights, style/variable metadata, subsets, license/fallback metadata, delivery modes, and optional Google family validation. `theme.fonts.list` output now validates every record with this schema.
