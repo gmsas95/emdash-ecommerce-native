@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { listThemeFonts } from "./fonts.js";
+import { FONT_REGISTRY, listThemeFonts } from "./fonts.js";
 import {
   FONT_IDS,
   FONT_SUBSETS,
@@ -25,7 +25,8 @@ const updateInputSchema = z.object({ patch: themeTokenPatchSchema }).strict();
 export type ThemeSearchInput = z.infer<typeof themeSearchInputSchema>;
 export type ThemeExecuteInput = z.infer<typeof themeExecuteInputSchema>;
 export type ThemeOperationArea = NonNullable<ThemeSearchInput["area"]>;
-
+const GOOGLE_FONT_IDS = FONT_REGISTRY.filter((font) => font.provider === "google").map((font) => font.id);
+const fontMetadata = listThemeFonts().map(({ id, displayName, provider, weights, subsets, deliveryModes }) => ({ id, displayName, provider, weights, subsets, deliveryModes }));
 const updatePaths = {
   "color.brand": { type: "string", description: "CSS color" },
   "color.brandHover": { type: "string", description: "CSS color" },
@@ -66,7 +67,7 @@ const updatePaths = {
   "typography.scale": { type: "string", enum: ["compact", "comfortable", "spacious"] },
   "typography.bodyLineHeight": { type: "string", pattern: "^\\d(?:\\.\\d{1,2})?$" },
   "typography.headingTracking": { type: "string", pattern: "^-?(?:0|0?\\.\\d{1,2})em$" },
-  "typography.google.family": { type: "string", enum: [...FONT_IDS] },
+  "typography.google.family": { type: "string", enum: GOOGLE_FONT_IDS },
   "typography.google.weights": { type: "array", items: { type: "integer", min: 100, max: 900 }, minItems: 1, maxItems: 8 },
   "typography.google.subsets": { type: "array", items: { type: "string", enum: [...FONT_SUBSETS] }, minItems: 1, maxItems: 2 },
   "typography.google.delivery": { type: "string", enum: [...GOOGLE_DELIVERY_MODES] },
@@ -94,7 +95,7 @@ export interface ThemeOperationDescription {
 
 const updateInputMetadata = {
   type: "object",
-  properties: { patch: { type: "object", properties: updatePaths, additionalProperties: false, minProperties: 1 } },
+  properties: { patch: { type: "object", properties: updatePaths, additionalProperties: false, minProperties: 1 } }, fontMetadata,
   required: ["patch"],
   additionalProperties: false,
 } as const satisfies Record<string, unknown>;
