@@ -41,11 +41,16 @@ const { id, limit = 50 } = Astro.props;
       const media = document.createElement("div");
       media.className = "product-card__media";
       const productImage = document.createElement("img");
-      productImage.src = imageUrl(data.images?.[0]?.url);
+      productImage.src = imageUrl(data.images?.[0]?.url) || "/commerce-placeholder.svg";
       productImage.alt = data.images?.[0]?.alt || data.name || "Product image";
       productImage.loading = "lazy";
       productImage.width = 800;
       productImage.height = 800;
+      productImage.addEventListener("error", () => {
+        if (productImage.src.endsWith("/commerce-placeholder.svg")) return;
+        productImage.src = "/commerce-placeholder.svg";
+        productImage.classList.add("commerce-placeholder");
+      }, { once: true });
       const badge = document.createElement("span");
       badge.className = "product-card__badge";
       badge.textContent = data.hasVariants ? "Options" : "Featured";

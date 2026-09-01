@@ -15,7 +15,7 @@ if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
   <Container>
     <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Cart", href: "/cart" }, { label: "Checkout" }]} />
     <PageHeader title="Checkout" lede="Complete your details, then continue to secure payment." />
-    {page ? <section class="commerce-card commerce-form-section checkout-copy"><CmsPageContent page={page} /></section> : <p class="notice">Final availability and totals are confirmed before payment.</p>}
+    {page ? <section class="commerce-card commerce-form-section checkout-copy"><CmsPageContent page={page} hideTitle /></section> : <p class="notice">Final availability and totals are confirmed before payment.</p>}
     <DemoNotice compact />
     <CheckoutIsland client:load />
   </Container>

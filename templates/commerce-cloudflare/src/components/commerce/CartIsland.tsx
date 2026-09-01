@@ -139,7 +139,7 @@ export function CartIsland() {
         currency={cart.currency}
         availabilityWarning={unavailable.length > 0 ? "Checkout is disabled until unavailable items are removed." : undefined}
       >
-        <a className="button" href={unavailable.length > 0 ? undefined : "/checkout"} aria-disabled={unavailable.length > 0 || undefined}>Continue to checkout</a>
+        {unavailable.length > 0 ? <span className="button button--disabled" aria-disabled="true">Continue to checkout</span> : <a className="button" href="/checkout">Continue to checkout</a>}
       </CommerceSummary>
     </div>
   );

@@ -13,5 +13,24 @@ const isRelativePath = trimmedSrc.startsWith("/") && !trimmedSrc.startsWith("//"
 const isAbsoluteHttpUrl = /^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(trimmedSrc);
 const imageSrc = isRelativePath || isAbsoluteHttpUrl ? trimmedSrc : "/commerce-placeholder.svg";
 const imageAlt = alt.trim() || "Product image";
+const isPlaceholder = !src || imageSrc === "/commerce-placeholder.svg";
 ---
-<img class:list={["commerce-product-media", !src || imageSrc === "/commerce-placeholder.svg" ? "commerce-placeholder" : undefined, className]} src={imageSrc} alt={imageAlt} width={width} height={height} loading="lazy" decoding="async" />
+<img class:list={["commerce-product-media", isPlaceholder ? "commerce-placeholder" : undefined, className]} src={imageSrc} alt={imageAlt} width={width} height={height} loading="lazy" decoding="async" data-commerce-image />
+<script>
+  const fixCommerceImages = () => {
+    for (const image of document.querySelectorAll<HTMLImageElement>("img[data-commerce-image]")) {
+      if (image.complete && image.naturalWidth === 0 && image.getAttribute("src") !== "/commerce-placeholder.svg") {
+        image.src = "/commerce-placeholder.svg";
+        image.classList.add("commerce-placeholder");
+        continue;
+      }
+      image.addEventListener("error", () => {
+        if (image.getAttribute("src") === "/commerce-placeholder.svg") return;
+        image.src = "/commerce-placeholder.svg";
+        image.classList.add("commerce-placeholder");
+      }, { once: true });
+    }
+  };
+  fixCommerceImages();
+  window.addEventListener("load", fixCommerceImages, { once: true });
+</script>

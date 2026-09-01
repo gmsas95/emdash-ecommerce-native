@@ -24,7 +24,7 @@ export function CommerceProductImage({ src, alt, size = "card" }: Props) {
   const isPlaceholder = imageSrc === "/commerce-placeholder.svg";
   return (
     <div className={`commerce-product-image ${sizeClass[size]}${isPlaceholder ? " commerce-placeholder" : ""}`}>
-      <img src={imageSrc} alt={alt.trim() || "Product image"} loading="lazy" decoding="async" />
+      <img src={imageSrc} alt={alt.trim() || "Product image"} loading="lazy" decoding="async" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/commerce-placeholder.svg"; }} />
     </div>
   );
 }

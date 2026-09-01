@@ -59,7 +59,7 @@ export function ProductDetailIsland({ slug }: Props) {
       currency: variant?.currency || item.data.currency,
       items: [{ id: variant?.id || item.id, name: item.data.name, quantity: 1 }],
     });
-  }, [item, selectedVariantId]);
+  }, [item]);
 
   if (loading) return <CommerceStatus message="Loading product details…" />;
   if (error && !item) {

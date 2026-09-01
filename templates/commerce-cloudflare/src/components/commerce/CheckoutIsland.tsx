@@ -142,7 +142,7 @@ export function CheckoutIsland() {
     const phone = (values.phone || "").trim();
     const customer = { name, email, ...(phone ? { phone } : {}) };
     const shippingAddress = Object.fromEntries(
-      [...ADDRESS_FIELDS].flatMap((name) => {
+      Object.keys(ADDRESS_FIELDS).flatMap((name) => {
         const value = (values[name] || "").trim();
         return value ? [[name, value]] : [];
       }),

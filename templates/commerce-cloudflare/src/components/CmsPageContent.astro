@@ -6,15 +6,16 @@ import ComposerSections from "./ComposerSections.astro";
 
 interface Props {
   page: CmsPageEntry;
+  hideTitle?: boolean;
 }
 
-const { page } = Astro.props;
+const { page, hideTitle = false } = Astro.props;
 const image = page.data.featured_image;
 const imageSource = image && ("url" in image ? image.url : "src" in image ? image.src : undefined);
 const layout = await loadPageLayout(page.id, Astro.url, Astro.locals.emdash?.handlePublicPluginApiRoute);
 ---
 <article class="cms-page" data-cms-collection="pages" data-cms-slug={page.id}>
-  <h1 {...(page.edit?.title ?? {})}>{page.data.title ?? page.id}</h1>
+  {!hideTitle && <h1 {...(page.edit?.title ?? {})}>{page.data.title ?? page.id}</h1>}
   {imageSource && (
     <div class="cms-page-media" {...(page.edit?.featured_image ?? {})}>
       <Image image={image as never} />

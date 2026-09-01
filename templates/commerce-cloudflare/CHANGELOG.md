@@ -1,5 +1,13 @@
 # @emdash-cms/template-starter-cloudflare
 
+## Unreleased
+
+### Added
+
+- Rebuilt the storefront around a responsive Astro commerce shell with focused React islands and Kumo controls.
+- Added product media snapshots for cart, checkout, and historical order previews, with safe placeholders and legacy fallback behavior.
+- Improved cart, checkout, and order flows with structured summaries, image previews, accessible error states, payment/country dropdowns, and mobile layouts.
+
 ## 0.0.3
 
 ### Patch Changes

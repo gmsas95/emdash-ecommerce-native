@@ -247,6 +247,7 @@ main { min-height: 70vh; }
 .commerce-status[data-status="error"] { border-color: var(--theme-color-danger); color: var(--theme-color-danger); }
 .commerce-placeholder { min-height: 100%; background: var(--theme-color-surfaceAlt); object-fit: contain !important; }
 .commerce-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.button--disabled { cursor: not-allowed; opacity: .55; pointer-events: none; }
 .commerce-order-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; }
 .commerce-order-meta > div { min-width: 0; padding: .85rem 1rem; border-radius: var(--theme-shape-radiusSmall); background: var(--theme-color-surfaceAlt); }
 .commerce-order-meta dt { color: var(--theme-color-muted); font-family: var(--theme-font-ui); font-size: .72rem; }
