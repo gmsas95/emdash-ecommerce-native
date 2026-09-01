@@ -25,6 +25,12 @@ export interface AddressSnapshot {
   phone?: string;
 }
 
+export interface ProductMediaSnapshot {
+  mediaId?: string;
+  url: string;
+  alt?: string;
+}
+
 export interface OrderItem {
   lineId: string;
   name: string;
@@ -32,6 +38,7 @@ export interface OrderItem {
   unitPrice: Money;
   total: Money;
   sku?: string;
+  image?: ProductMediaSnapshot;
 }
 
 export interface OrderSnapshot {
@@ -116,6 +123,26 @@ function parseCustomerSnapshot(input: unknown): CustomerSnapshot {
   };
 }
 
+function parseProductMediaSnapshot(input: unknown): ProductMediaSnapshot {
+  if (!isRecord(input)) {
+    return invalidPayload("Invalid product image");
+  }
+  const url = input.url;
+  if (typeof url !== "string" || url.trim() === "") {
+    return invalidPayload("Invalid product image URL");
+  }
+  if (!/^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(url)) {
+    return invalidPayload("Invalid product image URL");
+  }
+  const mediaId = input.mediaId === undefined ? undefined : parseNonEmptyString(input.mediaId, "product image mediaId");
+  const alt = input.alt === undefined ? undefined : parseNonEmptyString(input.alt, "product image alt");
+  return {
+    ...(mediaId === undefined ? {} : { mediaId }),
+    url,
+    ...(alt === undefined ? {} : { alt }),
+  };
+}
+
 function parseOrderItem(input: unknown, currency: string): OrderItem {
   if (!isRecord(input)) {
     return invalidPayload("Invalid order item");
@@ -137,6 +164,7 @@ function parseOrderItem(input: unknown, currency: string): OrderItem {
     unitPrice,
     total,
     sku: input.sku === undefined ? undefined : parseNonEmptyString(input.sku, "order item sku"),
+    image: input.image === undefined ? undefined : parseProductMediaSnapshot(input.image),
   };
 }
 

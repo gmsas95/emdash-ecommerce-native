@@ -5,6 +5,7 @@ import {
   getBridgeSigningData,
   parseBridgeRequest,
   parseMoney,
+  parseOrderSnapshot,
 } from "../src/index.js";
 import type {
   BuiltInBridgeRequest,
@@ -115,6 +116,46 @@ describe("Commerce contracts", () => {
       () => parseMoney({ amountMinor: 1, currency: "ZZZ" }),
       CONTRACT_ERROR_CODES.INVALID_CURRENCY,
     );
+  });
+
+  it("preserves an optional product image on order items", () => {
+    const order = parseOrderSnapshot({
+      orderId: "order-1",
+      currency: "USD",
+      items: [{
+        lineId: "line-1",
+        name: "Tea",
+        quantity: 1,
+        unitPrice: { amountMinor: 1000, currency: "USD" },
+        total: { amountMinor: 1000, currency: "USD" },
+        image: { mediaId: "media-1", url: "https://cdn.example.test/tea.jpg", alt: "Tea" },
+      }],
+      subtotal: { amountMinor: 1000, currency: "USD" },
+      total: { amountMinor: 1000, currency: "USD" },
+    });
+
+    expect(order.items[0]?.image).toEqual({
+      mediaId: "media-1",
+      url: "https://cdn.example.test/tea.jpg",
+      alt: "Tea",
+    });
+  });
+
+  it("rejects an order item image without an absolute http URL", () => {
+    expect(() => parseOrderSnapshot({
+      orderId: "order-1",
+      currency: "USD",
+      items: [{
+        lineId: "line-1",
+        name: "Tea",
+        quantity: 1,
+        unitPrice: { amountMinor: 1000, currency: "USD" },
+        total: { amountMinor: 1000, currency: "USD" },
+        image: { url: "javascript:alert(1)" },
+      }],
+      subtotal: { amountMinor: 1000, currency: "USD" },
+      total: { amountMinor: 1000, currency: "USD" },
+    })).toThrow();
   });
 
   it("rejects an empty currency code with a stable error code", () => {

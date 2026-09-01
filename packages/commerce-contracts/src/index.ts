@@ -15,6 +15,7 @@ export type {
   CustomerSnapshot,
   OrderItem,
   OrderSnapshot,
+  ProductMediaSnapshot,
 } from "./domain.js";
 export { parseAddressSnapshot, parseMetadata, parseOrderSnapshot } from "./domain.js";
 export type {
