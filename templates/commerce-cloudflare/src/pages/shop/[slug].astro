@@ -1,12 +1,17 @@
 ---
 import Base from "../../layouts/Base.astro";
-import ClientProductDetail from "../../components/ClientProductDetail.astro";
+import Breadcrumbs from "../../components/layout/Breadcrumbs.astro";
+import Container from "../../components/layout/Container.astro";
+import PageHeader from "../../components/layout/PageHeader.astro";
+import { ProductDetailIsland } from "../../components/commerce/ProductDetailIsland";
 import DemoNotice from "../../components/DemoNotice.astro";
 const slug = Astro.params.slug ?? "";
 ---
-<Base title="Product" description="View product details and available options.">
-  <div class="page-wrap section product-page">
+<Base title="Product details" description="View product details and available options." variant="commerce">
+  <Container>
+    <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Shop", href: "/shop" }, { label: "Product details" }]} />
+    <PageHeader title="Product details" lede="Choose an option and quantity, then add it to your cart." />
     <DemoNotice compact />
-    <ClientProductDetail slug={slug} />
-  </div>
+    <ProductDetailIsland client:load slug={slug} />
+  </Container>
 </Base>
