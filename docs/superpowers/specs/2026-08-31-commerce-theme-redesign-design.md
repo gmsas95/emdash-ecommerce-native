@@ -211,6 +211,7 @@ interface ProductMediaSnapshot {
   alt?: string;
 }
 ```
+Media URLs may be same-origin paths beginning with `/` (excluding `//`) or absolute `http:`/`https:` URLs. Reject `javascript:`, `data:`, and other schemes before rendering.
 
 `CartLine`, `StoreCartLine`, `OrderSnapshotLineInput`, `OrderSnapshotLine`, and the shared `OrderItem` receive an optional `image?: ProductMediaSnapshot` property.
 

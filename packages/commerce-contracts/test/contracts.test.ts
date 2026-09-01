@@ -140,6 +140,24 @@ describe("Commerce contracts", () => {
       alt: "Tea",
     });
   });
+  it("preserves a same-origin product image path", () => {
+    const order = parseOrderSnapshot({
+      orderId: "order-1",
+      currency: "USD",
+      items: [{
+        lineId: "line-1",
+        name: "Tea",
+        quantity: 1,
+        unitPrice: { amountMinor: 1000, currency: "USD" },
+        total: { amountMinor: 1000, currency: "USD" },
+        image: { url: "/media/tea.jpg", alt: "Tea" },
+      }],
+      subtotal: { amountMinor: 1000, currency: "USD" },
+      total: { amountMinor: 1000, currency: "USD" },
+    });
+
+    expect(order.items[0]?.image).toEqual({ url: "/media/tea.jpg", alt: "Tea" });
+  });
 
   it("rejects an order item image without an absolute http URL", () => {
     expect(() => parseOrderSnapshot({

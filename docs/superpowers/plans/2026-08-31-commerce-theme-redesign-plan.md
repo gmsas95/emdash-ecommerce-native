@@ -168,7 +168,7 @@ export interface OrderItem {
 }
 ```
 
-Add a parser that accepts only `http:` or `https:` URLs, copies `mediaId` and `alt` only when they are non-empty strings, and calls `invalidPayload` for malformed objects or schemes. Include the parsed image in the object returned by `parseOrderItem` only when input contains one. Re-export `ProductMediaSnapshot` from `src/index.ts`.
+Add a parser that accepts same-origin paths beginning with `/` except `//`, or absolute `http:`/`https:` URLs. Reject `javascript:`, `data:`, and other schemes. Copy `mediaId` and `alt` only when they are non-empty strings, call `invalidPayload` for malformed objects, and include the parsed image in the object returned by `parseOrderItem` only when input contains one. Re-export `ProductMediaSnapshot` from `src/index.ts`.
 
 - [ ] **Step 4: Run the contract tests and typecheck**
 
@@ -234,7 +234,7 @@ Import `ProductMediaSnapshot` from `@gmsas95/emdash-commerce-contracts` and add 
 
 - [ ] **Step 4: Implement plugin capture and checkout fallback**
 
-Update `catalogCartItem` to read the product document’s first image and return it as `{ mediaId, url, alt }` only when the URL is a valid `http:`/`https:` string. Pass that value into `addCartLine`. In checkout’s line mapping, use `line.image` when present; otherwise read the current product primary image as a compatibility fallback. Do not accept image data from browser request bodies and do not use client-provided prices.
+Update `catalogCartItem` to read the product document’s first image and return it as `{ mediaId, url, alt }` only when the URL is a safe same-origin path or absolute `http:`/`https:` URL. Pass that value into `addCartLine`. In checkout’s line mapping, use `line.image` when present; otherwise read the current product primary image as a compatibility fallback. Do not accept image data from browser request bodies and do not use client-provided prices.
 
 - [ ] **Step 5: Run focused tests and typechecks**
 

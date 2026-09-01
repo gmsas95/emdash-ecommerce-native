@@ -131,7 +131,9 @@ function parseProductMediaSnapshot(input: unknown): ProductMediaSnapshot {
   if (typeof url !== "string" || url.trim() === "") {
     return invalidPayload("Invalid product image URL");
   }
-  if (!/^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(url)) {
+  const isRelativePath = url.startsWith("/") && !url.startsWith("//");
+  const isAbsoluteHttpUrl = /^https?:\/\/[^\s/]+(?:[/?#][^\s]*)?$/i.test(url);
+  if (!isRelativePath && !isAbsoluteHttpUrl) {
     return invalidPayload("Invalid product image URL");
   }
   const mediaId = input.mediaId === undefined ? undefined : parseNonEmptyString(input.mediaId, "product image mediaId");
