@@ -2648,6 +2648,22 @@ importers:
         specifier: 'catalog:'
         version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@25.9.1)(jsdom@26.1.0)(vite@8.0.16(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
 
+  packages/theme-tokens:
+    dependencies:
+      emdash:
+        specifier: workspace:*
+        version: link:../core
+      react:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.4
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.1
+    devDependencies:
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jsdom@26.1.0)(vite@8.0.16(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
+
   packages/workerd:
     dependencies:
       emdash:
@@ -2837,6 +2853,9 @@ importers:
       '@emdash-cms/page-composer':
         specifier: workspace:*
         version: link:../../packages/page-composer
+      '@emdash-cms/theme-tokens':
+        specifier: workspace:*
+        version: link:../../packages/theme-tokens
       '@emdash-commerce/core':
         specifier: workspace:*
         version: link:../../packages/commerce-core
@@ -2862,6 +2881,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
         version: 4.20260305.1
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.5(@opentelemetry/api@1.9.0)(@types/node@26.1.1)(jsdom@26.1.0)(vite@8.0.16(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
       wrangler:
         specifier: 'catalog:'
         version: 4.124.0(@cloudflare/workers-types@4.20260305.1)

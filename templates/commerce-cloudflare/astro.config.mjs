@@ -4,6 +4,7 @@ import { d1, r2 } from "@emdash-cms/cloudflare";
 import { analyticsPlugin } from "@emdash-cms/analytics-core";
 import { pageComposerPlugin } from "@emdash-cms/page-composer";
 import { commercePlugin } from "@emdash-commerce/core";
+import { themeTokensPlugin } from "@emdash-cms/theme-tokens";
 import { demoCatalog } from "./src/data/demo-catalog.mjs";
 import chipForEmdash from "@chip-in-asia/plugin-chip-for-emdash";
 import { defineConfig } from "astro/config";
@@ -50,6 +51,7 @@ export default defineConfig({
         }),
         pageComposerPlugin(),
         analyticsPlugin(),
+        themeTokensPlugin(),
         chipForEmdash,
       ],
     }),

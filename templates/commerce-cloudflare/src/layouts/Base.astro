@@ -4,9 +4,10 @@ import {
   EmDashBodyStart,
   EmDashHead,
 } from "emdash/ui";
-import { getMenu, getSiteSettings } from "emdash";
+import { getMenu, getPluginSetting, getSiteSettings } from "emdash";
 import { createPublicPageContext } from "emdash/page";
 import LiveSearch from "emdash/ui/search";
+import { emitThemeCss, resolveThemeSettings } from "@emdash-cms/theme-tokens";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 import { ZIAS_MEDIA } from "../lib/zias-media";
 import "../styles/storefront.css";
@@ -22,6 +23,9 @@ interface Props {
 
 const { title, pageTitle, description, image, canonical, content } = Astro.props;
 const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(await getSiteSettings());
+const rawThemeSettings = await getPluginSetting("emdash-theme-tokens", "theme");
+const themeSettings = resolveThemeSettings(rawThemeSettings);
+const themeCss = emitThemeCss(themeSettings);
 const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 const pageDescription = description ?? siteTagline;
 const menu = await getMenu("primary");
@@ -52,8 +56,17 @@ const logoAlt = siteLogo?.alt || siteTitle;
     {pageDescription && <meta name="description" content={pageDescription} />}
     {canonical && <link rel="canonical" href={canonical} />}
     <EmDashHead page={pageCtx} />
+    <style is:inline data-theme-tokens set:html={themeCss}></style>
   </head>
-  <body>
+  <body
+    class="theme-shell"
+    data-theme-header={themeSettings.variants.header}
+    data-theme-hero={themeSettings.variants.hero}
+    data-theme-button={themeSettings.variants.button}
+    data-theme-card={themeSettings.variants.card}
+    data-theme-footer={themeSettings.variants.footer}
+    data-theme-motion={themeSettings.motion.enabled ? themeSettings.motion.intensity : "none"}
+  >
     <!-- impeccable:direction
     THESIS: A Sarawak pantry label turns a commerce template into a clear ZIAS food counter.
     OWN-WORLD: Warm paper, cocoa ink, ZIAS red, turmeric yellow, palm green, thin rules, and generous editorial crops.

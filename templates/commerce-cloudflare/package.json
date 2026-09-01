@@ -11,7 +11,8 @@
     "build": "pnpm --filter @gmsas95/emdash-commerce-contracts build && pnpm --filter @emdash-commerce/core build && astro build",
     "preview": "astro preview",
     "deploy": "pnpm run build && wrangler deploy",
-    "typecheck": "astro check && pnpm --filter @gmsas95/emdash-commerce-contracts typecheck && pnpm --filter @emdash-commerce/core typecheck"
+    "typecheck": "astro check && pnpm --filter @gmsas95/emdash-commerce-contracts typecheck && pnpm --filter @emdash-commerce/core typecheck",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/cloudflare": "catalog:",
@@ -23,6 +24,7 @@
     "@emdash-cms/analytics-tiktok": "workspace:*",
     "@emdash-cms/cloudflare": "workspace:*",
     "@emdash-cms/page-composer": "workspace:*",
+    "@emdash-cms/theme-tokens": "workspace:*",
     "@emdash-commerce/core": "workspace:*",
     "@gmsas95/emdash-commerce-contracts": "workspace:*",
     "astro": "catalog:",
@@ -33,6 +35,7 @@
   "devDependencies": {
     "@astrojs/check": "catalog:",
     "@cloudflare/workers-types": "catalog:",
+    "vitest": "catalog:",
     "wrangler": "catalog:"
   }
 }
